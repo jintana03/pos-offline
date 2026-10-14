@@ -43,7 +43,7 @@
 			<div class="brand-mark">P</div>
 			<strong>POS Offline</strong></div>
 		<div class="topbar-store"><span class="store-dot"></span><span id="storeNameTop">ร้านค้าของฉัน</span></div>
-		<div class="topbar-actions"><span class="date-label" id="todayLabel"></span><button class="logout-button topbar-logout" id="logoutBtn" type="button">ออกจากระบบ</button></div>
+		<div class="topbar-actions"><span class="date-label" id="todayLabel"></span><button class="logout-button topbar-logout" id="logoutBtn" type="button" onclick="sessionStorage.removeItem('pos_session_v1'); window.location.reload();">ออกจากระบบ</button></div>
 		</header>
 		<section id="salesView" class="view active-view">
 			<div class="page-heading">
