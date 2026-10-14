@@ -140,9 +140,9 @@
     window.scrollTo(0, 0);
   }
 
-  const admins = readAdmins();
-  const savedSessionUser = sessionStorage.getItem(SESSION_USER_KEY);
-  if (sessionStorage.getItem(SESSION_KEY) === '1' && admins.some(admin => admin.username === savedSessionUser)) setAuthenticated(savedSessionUser);
+  // Require a fresh login whenever the POS page is opened or reloaded.
+  sessionStorage.removeItem(SESSION_KEY);
+  sessionStorage.removeItem(SESSION_USER_KEY);
   configureMode();
   renderAdminList();
 
