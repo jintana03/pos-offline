@@ -169,14 +169,11 @@
       }
       if (cloud?.configured) {
         try {
-          await cloud.signIn(username, password);
-        } catch (loginError) {
-          try {
-            await cloud.signUp(username, password);
-          } catch (signupError) {
-            setMessage(`เชื่อมต่อบัญชีออนไลน์ไม่สำเร็จ: ${signupError.message || loginError.message}`);
-            return;
-          }
+          if (adminsNow.length) await cloud.signIn(username, password);
+          else await cloud.signUp(username, password);
+        } catch (cloudError) {
+          setMessage(`เชื่อมต่อบัญชีออนไลน์ไม่สำเร็จ: ${cloudError.message}`);
+          return;
         }
       }
       if (!account) saveAdmins([...adminsNow, { username, passwordHash }]);
