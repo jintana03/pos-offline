@@ -199,7 +199,7 @@
 			</div>
 			<button class="close-button" data-close="productModal">&times;</button></div>
 		<form id="productForm"><input type="hidden" name="id" /><label>ชื่อสินค้า *<input name="name" required="" placeholder="เช่น LED Racer 13.5w แสงขาว" type="text" /></label>
-			<div class="form-row"><label>SKU / บาร์โค้ด<input name="sku" placeholder="เช่น 4289630001" type="text" /></label><label>หมวดหมู่<select name="category" id="productCategorySelect"></select></label></div>
+			<div class="form-row"><label>SKU / บาร์โค้ด<input name="sku" placeholder="ระบบสร้างให้อัตโนมัติ" type="text" /><small class="field-hint">สินค้าใหม่จะรันเลขให้อัตโนมัติ แก้ไขเองได้</small></label><label>หมวดหมู่<select name="category" id="productCategorySelect"></select></label></div>
 			<div class="form-row"><label>ราคาขาย *<input name="price" type="number" min="0" step="0.01" required="" placeholder="0.00" /></label><label>จำนวนคงเหลือ<input name="stock" type="number" min="0" step="1" required="" placeholder="0" /></label></div>
 			<div class="modal-actions"><button type="button" class="outline-button" data-close="productModal">ยกเลิก</button><button class="primary-button" type="submit">บันทึกสินค้า</button></div>
 		</form></div>
@@ -235,6 +235,7 @@
 <script src="category-sync.js"></script>
 <script src="auth-support.js"></script>
   <script src="app.js"></script>
+  <script src="sku-support.js"></script>
   <script src="discount-support.js"></script>
   <script src="product-search-support.js"></script>
   <script src="unit-support.js"></script>

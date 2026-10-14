@@ -373,6 +373,7 @@ td:first-child { font-weight: 700; color: var(--ink); }
   .admin-list-row span { display: flex; align-items: center; gap: 8px; }
   .admin-list-row strong { font-size: 12px; }
   .admin-list-row small { color: #16845d; font-size: 10px; }
+  .field-hint { display: block; margin-top: 5px; color: var(--muted); font-size: 10px; font-weight: 400; }
 
   .data-danger-panel {
     margin-top: 18px;
