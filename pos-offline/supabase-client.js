@@ -57,6 +57,7 @@
   window.posSupabase = {
     configured: true,
     hasSession: () => Boolean(readSession()?.access_token),
+    userId: () => readSession()?.user?.id || '',
     signIn,
     signUp,
     signOut,
