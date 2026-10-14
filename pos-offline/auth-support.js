@@ -19,6 +19,7 @@
   const adminForm = document.querySelector('#adminForm');
   const adminList = document.querySelector('#adminList');
   const adminMessage = document.querySelector('#adminMessage');
+  const cloud = window.posSupabase;
 
   function readAuth() {
     try { return JSON.parse(localStorage.getItem(AUTH_KEY) || 'null'); } catch (_) { return null; }
@@ -104,7 +105,7 @@
     const data = Object.fromEntries(new FormData(event.target));
     const username = data.username.trim();
     const admins = readAdmins();
-    if (username.length < 3 || data.password.length < 4) return setAdminMessage('ชื่อผู้ใช้ต้องมีอย่างน้อย 3 ตัวอักษร และรหัสผ่านอย่างน้อย 4 ตัวอักษร');
+    if (username.length < 3 || data.password.length < 6) return setAdminMessage('ชื่อผู้ใช้ต้องมีอย่างน้อย 3 ตัวอักษร และรหัสผ่านอย่างน้อย 6 ตัวอักษร');
     if (data.password !== data.confirmPassword) return setAdminMessage('รหัสผ่านและการยืนยันรหัสผ่านไม่ตรงกัน');
     if (admins.some(admin => admin.username.toLowerCase() === username.toLowerCase())) return setAdminMessage('มีชื่อผู้ใช้นี้แล้ว');
     admins.push({ username, passwordHash: await hashPassword(data.password) });
@@ -126,6 +127,7 @@
   }
 
   function logout() {
+    cloud?.signOut();
     sessionStorage.removeItem(SESSION_KEY);
     sessionStorage.removeItem(SESSION_USER_KEY);
     document.body.classList.remove('pos-authenticated');
@@ -148,8 +150,8 @@
     const username = usernameInput.value.trim();
     const password = passwordInput.value;
     const adminsNow = readAdmins();
-    if (username.length < 3 || password.length < 4) {
-      setMessage('ชื่อผู้ใช้ต้องมีอย่างน้อย 3 ตัวอักษร และรหัสผ่านอย่างน้อย 4 ตัวอักษร');
+    if (username.length < 3 || password.length < 6) {
+      setMessage('ชื่อผู้ใช้ต้องมีอย่างน้อย 3 ตัวอักษร และรหัสผ่านอย่างน้อย 6 ตัวอักษร');
       return;
     }
     if (!adminsNow.length && password !== confirmInput.value) {
@@ -161,13 +163,27 @@
     try {
       const passwordHash = await hashPassword(password);
       const account = adminsNow.find(admin => admin.username.toLowerCase() === username.toLowerCase() && admin.passwordHash === passwordHash);
-      if (!adminsNow.length) {
-        saveAdmins([{ username, passwordHash }]);
-      } else if (!account) {
+      if (adminsNow.length && !account) {
         setMessage('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
         return;
       }
+      if (cloud?.configured) {
+        try {
+          await cloud.signIn(username, password);
+        } catch (loginError) {
+          try {
+            await cloud.signUp(username, password);
+          } catch (signupError) {
+            setMessage(`เชื่อมต่อบัญชีออนไลน์ไม่สำเร็จ: ${signupError.message || loginError.message}`);
+            return;
+          }
+        }
+      }
+      if (!adminsNow.length) {
+        saveAdmins([{ username, passwordHash }]);
+      }
       setAuthenticated(account?.username || username);
+      window.posCloudSync?.start();
       form.reset();
     } finally {
       submit.disabled = false;

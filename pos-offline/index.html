@@ -171,7 +171,7 @@
 						<button class="primary-button" type="submit">บันทึกข้อมูลร้าน</button></form>
 					<div class="admin-management-panel">
 						<div class="admin-panel-heading"><div><h3>จัดการแอดมิน</h3><p>เพิ่มผู้ดูแลระบบได้ในเครื่องนี้เท่านั้น</p></div><span class="admin-local-badge">ออฟไลน์</span></div>
-						<form id="adminForm" class="admin-form"><div class="form-row"><label>ชื่อผู้ใช้ใหม่<input id="newAdminUsername" name="username" type="text" autocomplete="off" placeholder="เช่น cashier" required /></label><label>รหัสผ่าน<input id="newAdminPassword" name="password" type="password" autocomplete="new-password" placeholder="อย่างน้อย 4 ตัวอักษร" required /></label></div><label>ยืนยันรหัสผ่าน<input id="newAdminConfirm" name="confirmPassword" type="password" autocomplete="new-password" placeholder="กรอกรหัสผ่านอีกครั้ง" required /></label><button class="outline-button" type="submit">เพิ่มแอดมิน</button><p class="admin-message" id="adminMessage" role="alert"></p></form>
+						<form id="adminForm" class="admin-form"><div class="form-row"><label>ชื่อผู้ใช้ใหม่<input id="newAdminUsername" name="username" type="text" autocomplete="off" placeholder="เช่น cashier" required /></label><label>รหัสผ่าน<input id="newAdminPassword" name="password" type="password" autocomplete="new-password" placeholder="อย่างน้อย 6 ตัวอักษร" required /></label></div><label>ยืนยันรหัสผ่าน<input id="newAdminConfirm" name="confirmPassword" type="password" autocomplete="new-password" placeholder="กรอกรหัสผ่านอีกครั้ง" required /></label><button class="outline-button" type="submit">เพิ่มแอดมิน</button><p class="admin-message" id="adminMessage" role="alert"></p></form>
 						<div class="admin-list" id="adminList"></div>
 					</div>
 					<div class="data-danger-panel">
@@ -236,6 +236,7 @@
 <script src="imported-data.js"></script>
 <script src="persistence-guard.js"></script>
 <script src="category-sync.js"></script>
+<script src="supabase-client.js"></script>
 <script src="auth-support.js"></script>
   <script src="app.js"></script>
   <script src="sku-support.js"></script>
@@ -244,5 +245,6 @@
   <script src="unit-support.js"></script>
 <script src="unit-display-support.js"></script>
 <script src="receipt-template.js"></script>
+<script src="cloud-sync.js"></script>
 </body>
 </html>
