@@ -163,7 +163,7 @@
     try {
       const passwordHash = await hashPassword(password);
       const account = adminsNow.find(admin => admin.username.toLowerCase() === username.toLowerCase() && admin.passwordHash === passwordHash);
-      if (adminsNow.length && !account) {
+      if (!cloud?.configured && adminsNow.length && !account) {
         setMessage('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
         return;
       }
@@ -179,9 +179,7 @@
           }
         }
       }
-      if (!adminsNow.length) {
-        saveAdmins([{ username, passwordHash }]);
-      }
+      if (!account) saveAdmins([...adminsNow, { username, passwordHash }]);
       setAuthenticated(account?.username || username);
       window.posCloudSync?.start();
       form.reset();
