@@ -80,17 +80,16 @@
   }
 
   function configureMode() {
-    const hasAccount = readAdmins().length > 0;
-    confirmField.hidden = hasAccount;
-    confirmInput.required = !hasAccount;
-    eyebrow.textContent = hasAccount ? 'เข้าสู่ระบบ' : 'เริ่มต้นใช้งาน';
-    title.textContent = hasAccount ? 'เข้าสู่ระบบ POS' : 'สร้างบัญชีผู้ดูแล';
-    description.textContent = hasAccount
-      ? 'กรุณาเข้าสู่ระบบเพื่อใช้งานระบบขายสินค้า'
-      : 'สร้างชื่อผู้ใช้และรหัสผ่านสำหรับเครื่องนี้ก่อนเริ่มใช้งาน';
-    submit.textContent = hasAccount ? 'เข้าสู่ระบบ' : 'สร้างบัญชีและเข้าสู่ระบบ';
-    usernameInput.autocomplete = hasAccount ? 'username' : 'new-username';
-    passwordInput.autocomplete = hasAccount ? 'current-password' : 'new-password';
+    confirmField.hidden = true;
+    confirmInput.required = false;
+    eyebrow.textContent = 'เข้าสู่ระบบ';
+    title.textContent = 'เข้าสู่ระบบ POS';
+    description.textContent = cloud?.configured
+      ? 'กรุณาเข้าสู่ระบบด้วยบัญชีที่ผู้ดูแลเพิ่มไว้ในระบบ'
+      : 'กรุณาเข้าสู่ระบบเพื่อใช้งานระบบขายสินค้า';
+    submit.textContent = 'เข้าสู่ระบบ';
+    usernameInput.autocomplete = 'username';
+    passwordInput.autocomplete = 'current-password';
   }
 
   function renderAdminList() {
@@ -102,6 +101,9 @@
 
   async function addAdmin(event) {
     event.preventDefault();
+    if (cloud?.configured) {
+      return setAdminMessage('ระบบออนไลน์เปิดใช้งานอยู่ บัญชีใหม่ต้องเพิ่มใน Supabase Dashboard > Authentication > Users ก่อนจึงจะเข้าสู่ระบบได้', 'error');
+    }
     const data = Object.fromEntries(new FormData(event.target));
     const username = data.username.trim();
     const admins = readAdmins();
@@ -154,11 +156,6 @@
       setMessage('ชื่อผู้ใช้ต้องมีอย่างน้อย 3 ตัวอักษร และรหัสผ่านอย่างน้อย 6 ตัวอักษร');
       return;
     }
-    if (!adminsNow.length && password !== confirmInput.value) {
-      setMessage('รหัสผ่านและการยืนยันรหัสผ่านไม่ตรงกัน');
-      return;
-    }
-
     submit.disabled = true;
     try {
       const passwordHash = await hashPassword(password);
@@ -169,10 +166,9 @@
       }
       if (cloud?.configured) {
         try {
-          if (adminsNow.length) await cloud.signIn(username, password);
-          else await cloud.signUp(username, password);
+          await cloud.signIn(username, password);
         } catch (cloudError) {
-          setMessage(`เชื่อมต่อบัญชีออนไลน์ไม่สำเร็จ: ${cloudError.message}`);
+          setMessage('ไม่พบบัญชีนี้ในระบบ หรือชื่อผู้ใช้และรหัสผ่านไม่ถูกต้อง');
           return;
         }
       }

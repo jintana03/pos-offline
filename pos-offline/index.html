@@ -170,7 +170,8 @@
 						<div class="form-row"><label>เบอร์โทร<input name="storePhone" placeholder="08x-xxx-xxxx" type="text" /></label><label>เลขประจำตัวผู้เสียภาษี<input name="taxId" placeholder="ถ้ามี" type="text" /></label></div>
 						<button class="primary-button" type="submit">บันทึกข้อมูลร้าน</button></form>
 					<div class="admin-management-panel">
-						<div class="admin-panel-heading"><div><h3>จัดการแอดมิน</h3><p>เพิ่มผู้ดูแลระบบได้ในเครื่องนี้เท่านั้น</p></div><span class="admin-local-badge">ออฟไลน์</span></div>
+						<div class="admin-panel-heading"><div><h3>จัดการแอดมิน</h3><p>เพิ่มบัญชีใหม่ได้เมื่อเข้าสู่ระบบด้วยแอดมินผ่าน Supabase Dashboard</p></div><span class="admin-local-badge">ผู้ดูแลระบบ</span></div>
+						<p class="admin-message info">บัญชีที่เพิ่มใน Supabase เท่านั้นจึงจะเข้าสู่ระบบได้ทุกเครื่อง ห้ามใช้บัญชีที่ยังไม่ได้เพิ่มในฐานข้อมูล</p>
 						<form id="adminForm" class="admin-form"><div class="form-row"><label>ชื่อผู้ใช้ใหม่<input id="newAdminUsername" name="username" type="text" autocomplete="off" placeholder="เช่น cashier" required /></label><label>รหัสผ่าน<input id="newAdminPassword" name="password" type="password" autocomplete="new-password" placeholder="อย่างน้อย 6 ตัวอักษร" required /></label></div><label>ยืนยันรหัสผ่าน<input id="newAdminConfirm" name="confirmPassword" type="password" autocomplete="new-password" placeholder="กรอกรหัสผ่านอีกครั้ง" required /></label><button class="outline-button" type="submit">เพิ่มแอดมิน</button><p class="admin-message" id="adminMessage" role="alert"></p></form>
 						<div class="admin-list" id="adminList"></div>
 					</div>
