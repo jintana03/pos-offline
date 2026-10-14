@@ -313,6 +313,21 @@ td:first-child { font-weight: 700; color: var(--ink); }
   .auth-brand { margin-bottom: 28px; }
 }
 @media screen {
+  .topbar-logout {
+    border: 1px solid #f1c7cd;
+    border-radius: 9px;
+    padding: 8px 12px;
+    color: #b43f4b;
+    background: #fff7f8;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .topbar-logout:hover {
+    background: #fff0f2;
+    border-color: #d98b95;
+  }
+
   .data-danger-panel {
     margin-top: 18px;
     padding: 16px;
