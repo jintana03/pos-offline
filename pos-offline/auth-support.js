@@ -125,6 +125,17 @@
     renderAdminList();
   }
 
+  function logout() {
+    sessionStorage.removeItem(SESSION_KEY);
+    sessionStorage.removeItem(SESSION_USER_KEY);
+    document.body.classList.remove('pos-authenticated');
+    gate.setAttribute('aria-hidden', 'false');
+    form.reset();
+    setMessage('');
+    configureMode();
+    window.scrollTo(0, 0);
+  }
+
   const admins = readAdmins();
   const savedSessionUser = sessionStorage.getItem(SESSION_USER_KEY);
   if (sessionStorage.getItem(SESSION_KEY) === '1' && admins.some(admin => admin.username === savedSessionUser)) setAuthenticated(savedSessionUser);
@@ -164,9 +175,6 @@
   });
 
   adminForm?.addEventListener('submit', addAdmin);
-  document.querySelector('#logoutBtn')?.addEventListener('click', () => {
-    sessionStorage.removeItem(SESSION_KEY);
-    sessionStorage.removeItem(SESSION_USER_KEY);
-    window.location.reload();
-  });
+  window.posLogout = logout;
+  document.querySelector('#logoutBtn')?.addEventListener('click', logout);
 })();
