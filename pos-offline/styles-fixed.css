@@ -312,3 +312,43 @@ td:first-child { font-weight: 700; color: var(--ink); }
   .auth-card { padding: 27px 21px; border-radius: 17px; }
   .auth-brand { margin-bottom: 28px; }
 }
+@media screen {
+  .data-danger-panel {
+    margin-top: 18px;
+    padding: 16px;
+    border: 1px solid #ffd2d7;
+    border-radius: 14px;
+    background: #fff7f8;
+  }
+
+  .data-danger-panel h3 {
+    margin: 0 0 6px;
+    color: #b43f4b;
+    font-size: 14px;
+  }
+
+  .data-danger-panel p {
+    margin: 0 0 12px;
+    color: #8b6570;
+    font-size: 12px;
+    line-height: 1.6;
+  }
+
+  .danger-button {
+    border: 1px solid #e7a8b0;
+    border-radius: 9px;
+    padding: 9px 13px;
+    color: #a83240;
+    background: #fff;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .danger-button:hover {
+    border-color: #c95b68;
+    color: #8d2432;
+    background: #fff0f2;
+  }
+}

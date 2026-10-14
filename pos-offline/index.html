@@ -43,7 +43,7 @@
 			<div class="brand-mark">P</div>
 			<strong>POS Offline</strong></div>
 		<div class="topbar-store"><span class="store-dot"></span><span id="storeNameTop">ร้านค้าของฉัน</span></div>
-		<div class="topbar-actions"><span class="date-label" id="todayLabel"></span><button class="icon-button" id="resetDemoBtn" title="เริ่มข้อมูลตัวอย่างใหม่">↺</button><button class="icon-button logout-button" id="logoutBtn" title="ออกจากระบบ">⇥</button></div>
+		<div class="topbar-actions"><span class="date-label" id="todayLabel"></span><button class="icon-button logout-button" id="logoutBtn" title="ออกจากระบบ">⇥</button></div>
 		</header>
 		<section id="salesView" class="view active-view">
 			<div class="page-heading">
@@ -168,7 +168,13 @@
 					</div>
 					<form id="settingsForm"><label>ชื่อร้าน<input name="storeName" placeholder="ร้านค้าของฉัน" type="text" /></label><label>ที่อยู่ร้าน<textarea name="storeAddress" rows="3" placeholder="ที่อยู่สำหรับแสดงบนใบเสร็จ"></textarea></label>
 						<div class="form-row"><label>เบอร์โทร<input name="storePhone" placeholder="08x-xxx-xxxx" type="text" /></label><label>เลขประจำตัวผู้เสียภาษี<input name="taxId" placeholder="ถ้ามี" type="text" /></label></div>
-						<button class="primary-button" type="submit">บันทึกข้อมูลร้าน</button></form></div>
+						<button class="primary-button" type="submit">บันทึกข้อมูลร้าน</button></form>
+					<div class="data-danger-panel">
+						<h3>ล้างข้อมูลระบบ</h3>
+						<p>ปุ่มนี้ใช้สำหรับล้างข้อมูลทั้งเว็บไซต์ ได้แก่ สินค้า รายการขาย และการตั้งค่าร้าน ข้อมูลที่ล้างแล้วไม่สามารถกู้คืนได้</p>
+						<button class="danger-button" id="resetDemoBtn" type="button">ล้างข้อมูลทั้งเว็บไซต์</button>
+					</div>
+				</div>
 				<div class="panel info-panel">
 					<div class="info-icon">⌁</div>
 					<h2>โหมดออฟไลน์</h2>
