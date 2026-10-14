@@ -1,6 +1,8 @@
 (function () {
   const AUTH_KEY = 'pos_auth_v1';
+  const ADMINS_KEY = 'pos_admins_v1';
   const SESSION_KEY = 'pos_session_v1';
+  const SESSION_USER_KEY = 'pos_session_user_v1';
   const form = document.querySelector('#authForm');
   const gate = document.querySelector('#authGate');
   if (!form || !gate) return;
@@ -14,9 +16,31 @@
   const description = document.querySelector('#authDescription');
   const submit = document.querySelector('#authSubmit');
   const message = document.querySelector('#authMessage');
+  const adminForm = document.querySelector('#adminForm');
+  const adminList = document.querySelector('#adminList');
+  const adminMessage = document.querySelector('#adminMessage');
 
   function readAuth() {
     try { return JSON.parse(localStorage.getItem(AUTH_KEY) || 'null'); } catch (_) { return null; }
+  }
+
+  function readAdmins() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(ADMINS_KEY) || 'null');
+      if (Array.isArray(saved) && saved.length) return saved.filter(item => item?.username && item?.passwordHash);
+    } catch (_) {}
+    const legacy = readAuth();
+    if (legacy?.username && legacy?.passwordHash) {
+      const migrated = [legacy];
+      localStorage.setItem(ADMINS_KEY, JSON.stringify(migrated));
+      return migrated;
+    }
+    return [];
+  }
+
+  function saveAdmins(admins) {
+    localStorage.setItem(ADMINS_KEY, JSON.stringify(admins));
+    localStorage.setItem(AUTH_KEY, JSON.stringify(admins[0] || null));
   }
 
   function simpleHash(value) {
@@ -35,9 +59,12 @@
     return [...new Uint8Array(buffer)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
   }
 
-  function setAuthenticated() {
+  function setAuthenticated(username) {
     document.body.classList.add('pos-authenticated');
     gate.setAttribute('aria-hidden', 'true');
+    sessionStorage.setItem(SESSION_KEY, '1');
+    sessionStorage.setItem(SESSION_USER_KEY, username);
+    renderAdminList();
   }
 
   function setMessage(text, type = 'error') {
@@ -45,8 +72,14 @@
     message.className = `auth-message ${type}`;
   }
 
+  function setAdminMessage(text, type = 'error') {
+    if (!adminMessage) return;
+    adminMessage.textContent = text;
+    adminMessage.className = `admin-message ${type}`;
+  }
+
   function configureMode() {
-    const hasAccount = Boolean(readAuth());
+    const hasAccount = readAdmins().length > 0;
     confirmField.hidden = hasAccount;
     confirmInput.required = !hasAccount;
     eyebrow.textContent = hasAccount ? 'เข้าสู่ระบบ' : 'เริ่มต้นใช้งาน';
@@ -59,20 +92,56 @@
     passwordInput.autocomplete = hasAccount ? 'current-password' : 'new-password';
   }
 
-  if (sessionStorage.getItem(SESSION_KEY) === '1' && readAuth()) setAuthenticated();
+  function renderAdminList() {
+    if (!adminList) return;
+    const current = sessionStorage.getItem(SESSION_USER_KEY) || '';
+    adminList.innerHTML = readAdmins().map(admin => `<div class="admin-list-row"><span><strong>${admin.username}</strong>${admin.username === current ? '<small>กำลังใช้งาน</small>' : ''}</span><button class="small-button delete" type="button" data-remove-admin="${admin.username}">ลบ</button></div>`).join('');
+    adminList.querySelectorAll('[data-remove-admin]').forEach(button => button.addEventListener('click', () => removeAdmin(button.dataset.removeAdmin)));
+  }
+
+  async function addAdmin(event) {
+    event.preventDefault();
+    const data = Object.fromEntries(new FormData(event.target));
+    const username = data.username.trim();
+    const admins = readAdmins();
+    if (username.length < 3 || data.password.length < 4) return setAdminMessage('ชื่อผู้ใช้ต้องมีอย่างน้อย 3 ตัวอักษร และรหัสผ่านอย่างน้อย 4 ตัวอักษร');
+    if (data.password !== data.confirmPassword) return setAdminMessage('รหัสผ่านและการยืนยันรหัสผ่านไม่ตรงกัน');
+    if (admins.some(admin => admin.username.toLowerCase() === username.toLowerCase())) return setAdminMessage('มีชื่อผู้ใช้นี้แล้ว');
+    admins.push({ username, passwordHash: await hashPassword(data.password) });
+    saveAdmins(admins);
+    event.target.reset();
+    setAdminMessage('เพิ่มแอดมินเรียบร้อยแล้ว', 'success');
+    renderAdminList();
+  }
+
+  function removeAdmin(username) {
+    const admins = readAdmins();
+    const current = sessionStorage.getItem(SESSION_USER_KEY) || '';
+    if (admins.length <= 1) return setAdminMessage('ต้องมีแอดมินอย่างน้อย 1 บัญชี');
+    if (username === current) return setAdminMessage('ไม่สามารถลบบัญชีที่กำลังใช้งานอยู่');
+    if (!confirm(`ต้องการลบแอดมิน ${username} ใช่หรือไม่?`)) return;
+    saveAdmins(admins.filter(admin => admin.username !== username));
+    setAdminMessage('ลบแอดมินเรียบร้อยแล้ว', 'success');
+    renderAdminList();
+  }
+
+  const admins = readAdmins();
+  const savedSessionUser = sessionStorage.getItem(SESSION_USER_KEY);
+  if (sessionStorage.getItem(SESSION_KEY) === '1' && admins.some(admin => admin.username === savedSessionUser)) setAuthenticated(savedSessionUser);
   configureMode();
+  renderAdminList();
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
     setMessage('');
     const username = usernameInput.value.trim();
     const password = passwordInput.value;
-    const existing = readAuth();
+    const adminsNow = readAdmins();
     if (username.length < 3 || password.length < 4) {
       setMessage('ชื่อผู้ใช้ต้องมีอย่างน้อย 3 ตัวอักษร และรหัสผ่านอย่างน้อย 4 ตัวอักษร');
       return;
     }
-    if (!existing && password !== confirmInput.value) {
+    if (!adminsNow.length && password !== confirmInput.value) {
       setMessage('รหัสผ่านและการยืนยันรหัสผ่านไม่ตรงกัน');
       return;
     }
@@ -80,22 +149,24 @@
     submit.disabled = true;
     try {
       const passwordHash = await hashPassword(password);
-      if (!existing) {
-        localStorage.setItem(AUTH_KEY, JSON.stringify({ username, passwordHash }));
-      } else if (existing.username !== username || existing.passwordHash !== passwordHash) {
+      const account = adminsNow.find(admin => admin.username.toLowerCase() === username.toLowerCase() && admin.passwordHash === passwordHash);
+      if (!adminsNow.length) {
+        saveAdmins([{ username, passwordHash }]);
+      } else if (!account) {
         setMessage('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
         return;
       }
-      sessionStorage.setItem(SESSION_KEY, '1');
-      setAuthenticated();
+      setAuthenticated(account?.username || username);
       form.reset();
     } finally {
       submit.disabled = false;
     }
   });
 
+  adminForm?.addEventListener('submit', addAdmin);
   document.querySelector('#logoutBtn')?.addEventListener('click', () => {
     sessionStorage.removeItem(SESSION_KEY);
+    sessionStorage.removeItem(SESSION_USER_KEY);
     window.location.reload();
   });
 })();

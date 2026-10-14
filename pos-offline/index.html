@@ -43,7 +43,7 @@
 			<div class="brand-mark">P</div>
 			<strong>POS Offline</strong></div>
 		<div class="topbar-store"><span class="store-dot"></span><span id="storeNameTop">ร้านค้าของฉัน</span></div>
-		<div class="topbar-actions"><span class="date-label" id="todayLabel"></span><button class="logout-button topbar-logout" id="logoutBtn" type="button" onclick="sessionStorage.removeItem('pos_session_v1'); window.location.reload();">ออกจากระบบ</button></div>
+		<div class="topbar-actions"><span class="date-label" id="todayLabel"></span><button class="logout-button topbar-logout" id="logoutBtn" type="button" onclick="sessionStorage.removeItem('pos_session_v1'); sessionStorage.removeItem('pos_session_user_v1'); window.location.reload();">ออกจากระบบ</button></div>
 		</header>
 		<section id="salesView" class="view active-view">
 			<div class="page-heading">
@@ -169,6 +169,11 @@
 					<form id="settingsForm"><label>ชื่อร้าน<input name="storeName" placeholder="ร้านค้าของฉัน" type="text" /></label><label>ที่อยู่ร้าน<textarea name="storeAddress" rows="3" placeholder="ที่อยู่สำหรับแสดงบนใบเสร็จ"></textarea></label>
 						<div class="form-row"><label>เบอร์โทร<input name="storePhone" placeholder="08x-xxx-xxxx" type="text" /></label><label>เลขประจำตัวผู้เสียภาษี<input name="taxId" placeholder="ถ้ามี" type="text" /></label></div>
 						<button class="primary-button" type="submit">บันทึกข้อมูลร้าน</button></form>
+					<div class="admin-management-panel">
+						<div class="admin-panel-heading"><div><h3>จัดการแอดมิน</h3><p>เพิ่มผู้ดูแลระบบได้ในเครื่องนี้เท่านั้น</p></div><span class="admin-local-badge">ออฟไลน์</span></div>
+						<form id="adminForm" class="admin-form"><div class="form-row"><label>ชื่อผู้ใช้ใหม่<input id="newAdminUsername" name="username" type="text" autocomplete="off" placeholder="เช่น cashier" required /></label><label>รหัสผ่าน<input id="newAdminPassword" name="password" type="password" autocomplete="new-password" placeholder="อย่างน้อย 4 ตัวอักษร" required /></label></div><label>ยืนยันรหัสผ่าน<input id="newAdminConfirm" name="confirmPassword" type="password" autocomplete="new-password" placeholder="กรอกรหัสผ่านอีกครั้ง" required /></label><button class="outline-button" type="submit">เพิ่มแอดมิน</button><p class="admin-message" id="adminMessage" role="alert"></p></form>
+						<div class="admin-list" id="adminList"></div>
+					</div>
 					<div class="data-danger-panel">
 						<h3>ล้างข้อมูลระบบ</h3>
 						<p>ปุ่มนี้ใช้สำหรับล้างข้อมูลทั้งเว็บไซต์ ได้แก่ สินค้า รายการขาย และการตั้งค่าร้าน ข้อมูลที่ล้างแล้วไม่สามารถกู้คืนได้</p>
