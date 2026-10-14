@@ -109,6 +109,8 @@ h2 { font-size: 16px; margin-bottom: 4px; }
 .discount-editor { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 4px 0 12px; color: #7f899a; font-size: 12px; }
 .discount-editor input { width: 110px; border: 1px solid #dfe4ec; border-radius: 7px; padding: 7px 9px; color: var(--ink); outline: 0; text-align: right; font-size: 12px; }
 .discount-editor input:focus { border-color: #9eafff; box-shadow: 0 0 0 3px rgba(72, 103, 232, .1); }
+.discount-editor > div { display: flex; align-items: center; gap: 8px; }
+.discount-editor small { color: var(--muted); font-size: 10px; white-space: nowrap; }
 .summary-total { font-size: 16px; color: var(--ink); padding-top: 5px; margin-bottom: 16px; }
 .summary-total strong { font-size: 21px; }
 .checkout-button { width: 100%; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
@@ -158,6 +160,12 @@ td:first-child { font-weight: 700; color: var(--ink); }
 .method.active { background: var(--blue-soft); color: var(--blue); font-weight: 700; }
 .change-box { display: flex; justify-content: space-between; align-items: center; border: 1px dashed #cfd5e0; border-radius: 9px; padding: 12px 13px; margin-top: 17px; color: #788398; font-size: 12px; }
 .change-box strong { color: var(--green); font-size: 17px; }
+.payment-discount { display: flex; justify-content: space-between; align-items: center; margin: 14px 0; color: #788398; font-size: 12px; }
+.payment-discount label { margin: 0; color: #788398; font-size: 12px; }
+.payment-discount > div { display: flex; align-items: center; gap: 10px; }
+.payment-discount input { width: 82px; border: 1px solid #dfe4ec; border-radius: 7px; padding: 7px 9px; color: var(--ink); outline: 0; text-align: right; font-size: 12px; }
+.payment-discount input:focus { border-color: #9eafff; box-shadow: 0 0 0 3px rgba(72, 103, 232, .1); }
+.payment-discount strong { color: var(--red); min-width: 72px; text-align: right; }
 .receipt-modal { width: min(760px, 100%); }
 .receipt-paper { background: #fff; border: 1px solid #eef0f4; padding: 34px 46px; color: #111; min-height: 400px; overflow: auto; }
 .hidden { display: none !important; }

@@ -58,7 +58,7 @@
         <div class="invoice-note"><p>ได้รับสินค้าถูกต้องตามรายการข้างต้น</p><p>ใบเสร็จรับเงินจะสมบูรณ์เมื่อได้รับเงินเรียบร้อยแล้ว</p><p class="note-en">Received the goods in good order and condition.</p></div>
         <div class="invoice-totals">
           <div><span>รวมเงิน / Subtotal</span><b>${baht(sale.subtotal ?? sale.total)}</b></div>
-          <div><span>ส่วนลด / Discount</span><b>${baht(sale.discount)}</b></div>
+          <div><span>ส่วนลด / Discount (${Number(sale.discountPercent || 0)}%)</span><b>${baht(sale.discount)}</b></div>
           <div class="invoice-grand"><span>ยอดสุทธิ / Net Total</span><b>${baht(sale.total)}</b></div>
         </div>
       </section>

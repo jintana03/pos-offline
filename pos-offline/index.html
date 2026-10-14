@@ -214,6 +214,7 @@
 			<button class="close-button" data-close="paymentModal">&times;</button></div>
 		<div class="payment-total"><span>ยอดที่ต้องชำระ</span><strong id="paymentTotal">฿0.00</strong></div>
 		<div class="payment-methods"><button class="method active" data-method="เงินสด">เงินสด</button><button class="method" data-method="โอนเงิน">โอนเงิน</button><button class="method" data-method="บัตร">บัตร</button></div>
+		<div class="payment-discount"><label for="paymentDiscountInput">ส่วนลด (%)</label><div><input id="paymentDiscountInput" type="number" min="0" max="100" step="0.01" placeholder="0" inputmode="decimal" /><strong id="paymentDiscountAmount">฿0.00</strong></div></div>
 		<label id="cashInputLabel">รับเงินมา<input id="cashReceived" type="number" min="0" step="0.01" placeholder="0.00" /></label>
 		<div class="change-box"><span>เงินทอน</span><strong id="changeText">฿0.00</strong></div>
 		<div class="modal-actions"><button type="button" class="outline-button" data-close="paymentModal">ยกเลิก</button><button class="primary-button" id="confirmPaymentBtn">ยืนยันการขาย</button></div>
