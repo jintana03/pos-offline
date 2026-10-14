@@ -54,6 +54,10 @@
     saveSession(null);
   }
 
+  function clearSession() {
+    saveSession(null);
+  }
+
   window.posSupabase = {
     configured: true,
     hasSession: () => Boolean(readSession()?.access_token),
@@ -61,6 +65,7 @@
     signIn,
     signUp,
     signOut,
+    clearSession,
     query: request
   };
 })();

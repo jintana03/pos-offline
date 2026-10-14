@@ -135,5 +135,4 @@
   };
 
   window.posCloudSync = { start: syncNow, syncNow };
-  if (cloud.hasSession()) setTimeout(syncNow, 150);
 })();

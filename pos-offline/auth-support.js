@@ -21,6 +21,9 @@
   const adminMessage = document.querySelector('#adminMessage');
   const cloud = window.posSupabase;
 
+  // Do not let a previous account sync before the new login is completed.
+  cloud?.clearSession?.();
+
   function readAuth() {
     try { return JSON.parse(localStorage.getItem(AUTH_KEY) || 'null'); } catch (_) { return null; }
   }
