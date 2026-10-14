@@ -309,6 +309,7 @@ td:first-child { font-weight: 700; color: var(--ink); }
   .auth-card h1 { margin: 0 0 9px; font-size: 26px; letter-spacing: -.5px; }
   .auth-description { margin: 0 0 25px; color: #7d8799; font-size: 13px; line-height: 1.65; }
   .auth-card label { display: block; margin-bottom: 16px; color: #617087; font-size: 12px; font-weight: 650; }
+  .auth-card label[hidden] { display: none !important; }
   .auth-card input { display: block; width: 100%; margin-top: 7px; padding: 12px 13px; border: 1px solid #dfe4ec; border-radius: 9px; outline: 0; color: var(--ink); background: #fff; font-size: 13px; }
   .auth-submit { width: 100%; margin-top: 5px; min-height: 45px; }
   .auth-submit:disabled { opacity: .65; cursor: wait; }
