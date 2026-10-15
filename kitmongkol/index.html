@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="th">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<meta name="theme-color" content="#0b1220" />
+	<meta name="description" content="POS ออฟไลน์สำหรับร้านค้า" />
+	<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+	<meta http-equiv="Pragma" content="no-cache" />
+	<link rel="manifest" href="../pos-offline/manifest.webmanifest" />
+	<link rel="stylesheet" href="../pos-offline/styles-fixed.css?v=43" />
+	<title>กิจมงคลการไฟฟ้า - POS</title>
+</head>
+<body>
+<script>window.POS_SHOP_ID='kitmongkol';window.POS_SHOP_NAME='กิจมงคลการไฟฟ้า';</script>
+<div class="auth-gate" id="authGate">
+	<div class="auth-card">
+		<div class="auth-brand"><div class="brand-mark">P</div><div><strong>POS Offline</strong><small>ระบบคิดเงินหน้าร้าน</small></div></div>
+		<p class="eyebrow" id="authEyebrow">เข้าสู่ระบบ</p>
+		<h1 id="authTitle">เข้าสู่ระบบ POS</h1>
+		<p class="auth-description" id="authDescription">กรุณาเข้าสู่ระบบเพื่อใช้งานระบบขายสินค้า</p>
+		<form id="authForm" autocomplete="on">
+			<label>ชื่อผู้ใช้<input id="authUsername" name="username" autocomplete="username" required placeholder="เช่น admin" /></label>
+			<label>รหัสผ่าน<input id="authPassword" name="password" type="password" autocomplete="current-password" required placeholder="กรอกรหัสผ่าน" /></label>
+			<label class="auth-confirm-field" id="authConfirmField">ยืนยันรหัสผ่าน<input id="authConfirmPassword" name="confirmPassword" type="password" autocomplete="new-password" placeholder="กรอกรหัสผ่านอีกครั้ง" /></label>
+			<p class="auth-message" id="authMessage" role="alert"></p>
+			<button class="primary-button auth-submit" type="submit" id="authSubmit">เข้าสู่ระบบ</button>
+		</form>
+		<p class="auth-note">ข้อมูลการเข้าสู่ระบบเก็บไว้ในเครื่อง/เบราว์เซอร์นี้</p>
+	</div>
+</div>
+<div class="app-shell">
+	<aside class="sidebar">
+		<div class="brand">
+			<div class="brand-mark">P</div>
+			<div><strong>POS Offline</strong><small>ระบบคิดเงินหน้าร้าน</small></div>
+		</div>
+		<nav class="nav-list" aria-label="เมนูหลัก"><button class="nav-item active" data-view="sales"><span>▣</span> ขายสินค้า</button><button class="nav-item" data-view="products"><span>□</span> จัดการสินค้า</button><button class="nav-item" data-view="reports"><span>◒</span> รายงานยอดขาย</button><button class="nav-item" data-view="settings"><span>⚙</span> ตั้งค่าร้าน</button></nav>
+		<div class="sidebar-footer">
+			<div class="offline-pill"><i></i> ทำงานแบบออฟไลน์</div>
+			<div class="version">v1.0 &bull; ข้อมูลเก็บในเครื่องนี้</div>
+		</div>
+	</aside>
+	<main class="main-content"><header class="topbar">
+		<div class="mobile-brand">
+			<div class="brand-mark">P</div>
+			<strong>POS Offline</strong></div>
+		<div class="topbar-store"><span class="store-dot"></span><span id="storeNameTop">ร้านค้าของฉัน</span></div>
+		<div class="topbar-actions"><span class="date-label" id="todayLabel"></span><button class="logout-button topbar-logout" id="logoutBtn" type="button" onclick="window.posLogout ? window.posLogout() : (sessionStorage.removeItem('pos_session_v1'), sessionStorage.removeItem('pos_session_user_v1'), document.body.classList.remove('pos-authenticated'), document.getElementById('authGate').setAttribute('aria-hidden', 'false'))">ออกจากระบบ</button></div>
+		</header>
+		<section id="salesView" class="view active-view">
+			<div class="page-heading">
+				<div>
+					<p class="eyebrow">จุดขาย / วันนี้</p>
+					<h1>ขายสินค้า</h1>
+				</div>
+				<span class="status-badge"><i></i> พร้อมขาย</span></div>
+			<div class="sales-layout">
+				<section class="catalog-panel panel">
+					<div class="panel-header">
+						<div>
+							<h2>รายการสินค้า</h2>
+							<p>เลือกสินค้าเพื่อเพิ่มลงตะกร้า</p>
+						</div>
+						<button class="outline-button" id="goProductsBtn">จัดการสินค้า</button></div>
+					<div class="catalog-tools"><label class="search-box"><span>⌕</span><input id="productSearch" type="search" placeholder="ค้นหาชื่อสินค้า หรือ SKU" /></label>
+						<div class="category-tabs" id="categoryTabs"></div>
+					</div>
+					<div class="product-grid" id="productGrid"></div>
+				</section>
+				<aside class="cart-panel panel">
+					<div class="panel-header cart-header">
+						<div>
+							<h2>รายการขาย</h2>
+							<p><span id="cartCount">0</span> รายการในตะกร้า</p>
+						</div>
+						<button class="text-button danger" id="clearCartBtn">ล้างตะกร้า</button></div>
+					<div class="cart-items" id="cartItems">
+						<div class="empty-state">
+							<div class="empty-icon">🛒</div>
+							<strong>ยังไม่มีสินค้า</strong><span>เลือกสินค้าจากรายการด้านซ้าย</span></div>
+					</div>
+					<div class="cart-summary">
+						<div class="summary-row"><span>รวมก่อนส่วนลด</span><strong id="subtotalText">฿0.00</strong></div>
+						<div class="summary-row"><span>ส่วนลด</span><strong id="discountText">฿0.00</strong></div>
+						<div class="summary-total"><span>ยอดสุทธิ</span><strong id="totalText">฿0.00</strong></div>
+						<button class="primary-button checkout-button" id="checkoutBtn" disabled="disabled">ชำระเงิน <span>&rarr;</span></button></div>
+				</aside>
+			</div>
+		</section>
+		<section id="productsView" class="view">
+			<div class="page-heading">
+				<div>
+					<p class="eyebrow">คลังสินค้า / จัดการ</p>
+					<h1>จัดการสินค้า</h1>
+				</div>
+				<button class="primary-button" id="addProductBtn">＋ เพิ่มสินค้า</button></div>
+			<div class="panel table-panel">
+				<div class="panel-header">
+					<div>
+						<h2>สินค้าทั้งหมด</h2>
+						<p id="productCountLabel">0 รายการ</p>
+					</div>
+					<label class="search-box compact"><span>⌕</span><input id="manageSearch" type="search" placeholder="ค้นหาสินค้า" /></label></div>
+				<div class="table-wrap">
+					<table>
+						<thead>
+							<tr>
+								<th>สินค้า</th>
+								<th>SKU</th>
+								<th>หมวดหมู่</th>
+								<th>ราคาขาย</th>
+								<th>คงเหลือ</th>
+								<th></th>
+							</tr>
+						</thead>
+						<tbody id="productsTable"></tbody>
+					</table>
+				</div>
+			</div>
+		</section>
+		<section id="reportsView" class="view">
+			<div class="page-heading">
+				<div>
+					<p class="eyebrow">ภาพรวม / รายงาน</p>
+					<h1>รายงานยอดขาย</h1>
+				</div>
+				<span class="date-chip" id="reportDate"></span></div>
+			<div class="stats-grid">
+				<div class="stat-card"><span>ยอดขายวันนี้</span><strong id="reportSales">฿0.00</strong><small id="reportOrders">0 ออเดอร์</small></div>
+				<div class="stat-card accent"><span>จำนวนสินค้าที่ขาย</span><strong id="reportItems">0</strong><small>ชิ้น</small></div>
+				<div class="stat-card"><span>สินค้าในคลัง</span><strong id="reportStock">0</strong><small>รายการ</small></div>
+			</div>
+			<div class="panel table-panel">
+				<div class="panel-header">
+					<div>
+						<h2>รายการขายล่าสุด</h2>
+						<p>ประวัติการขายที่บันทึกไว้ในเครื่อง</p>
+					</div>
+				</div>
+				<div class="table-wrap">
+					<table>
+						<thead>
+							<tr>
+								<th>เลขที่ใบเสร็จ</th>
+								<th>เวลา</th>
+								<th>จำนวน</th>
+								<th>ยอดสุทธิ</th>
+								<th>การชำระเงิน</th>
+							</tr>
+						</thead>
+						<tbody id="salesTable"></tbody>
+					</table>
+				</div>
+			</div>
+		</section>
+		<section id="settingsView" class="view">
+			<div class="page-heading">
+				<div>
+					<p class="eyebrow">ระบบ / ตั้งค่า</p>
+					<h1>ตั้งค่าร้าน</h1>
+				</div>
+				<span class="status-badge"><i></i> บันทึกในเครื่อง</span></div>
+			<div class="settings-grid">
+				<div class="panel form-panel">
+					<div class="panel-header">
+						<div>
+							<h2>ข้อมูลร้าน</h2>
+							<p>เว้นไว้ก่อนได้ แล้วค่อยกรอกภายหลัง</p>
+						</div>
+					</div>
+					<form id="settingsForm"><label>ชื่อร้าน<input name="storeName" placeholder="ร้านค้าของฉัน" type="text" /></label><label>ที่อยู่ร้าน<textarea name="storeAddress" rows="3" placeholder="ที่อยู่สำหรับแสดงบนใบเสร็จ"></textarea></label>
+						<div class="form-row"><label>เบอร์โทร<input name="storePhone" placeholder="08x-xxx-xxxx" type="text" /></label><label>เลขประจำตัวผู้เสียภาษี<input name="taxId" placeholder="ถ้ามี" type="text" /></label></div>
+						<button class="primary-button" type="submit">บันทึกข้อมูลร้าน</button></form>
+					<div class="admin-management-panel">
+						<div class="admin-panel-heading"><div><h3>จัดการแอดมิน</h3><p>เพิ่มบัญชีใหม่ได้เมื่อเข้าสู่ระบบด้วยแอดมินผ่าน Supabase Dashboard</p></div><span class="admin-local-badge">ผู้ดูแลระบบ</span></div>
+						<p class="admin-message info">บัญชีที่เพิ่มใน Supabase เท่านั้นจึงจะเข้าสู่ระบบได้ทุกเครื่อง ห้ามใช้บัญชีที่ยังไม่ได้เพิ่มในฐานข้อมูล</p>
+						<form id="adminForm" class="admin-form"><div class="form-row"><label>ชื่อผู้ใช้ใหม่<input id="newAdminUsername" name="username" type="text" autocomplete="off" placeholder="เช่น cashier" required /></label><label>รหัสผ่าน<input id="newAdminPassword" name="password" type="password" autocomplete="new-password" placeholder="อย่างน้อย 6 ตัวอักษร" required /></label></div><label>ยืนยันรหัสผ่าน<input id="newAdminConfirm" name="confirmPassword" type="password" autocomplete="new-password" placeholder="กรอกรหัสผ่านอีกครั้ง" required /></label><button class="outline-button" type="submit">เพิ่มแอดมิน</button><p class="admin-message" id="adminMessage" role="alert"></p></form>
+						<div class="admin-list" id="adminList"></div>
+					</div>
+					<div class="data-danger-panel">
+						<h3>ล้างข้อมูลระบบ</h3>
+						<p>ปุ่มนี้ใช้สำหรับล้างข้อมูลทั้งเว็บไซต์ ได้แก่ สินค้า รายการขาย และการตั้งค่าร้าน ข้อมูลที่ล้างแล้วไม่สามารถกู้คืนได้</p>
+						<button class="danger-button" id="resetDemoBtn" type="button">ล้างข้อมูลทั้งเว็บไซต์</button>
+					</div>
+				</div>
+				<div class="panel info-panel">
+					<div class="info-icon">⌁</div>
+					<h2>โหมดออฟไลน์</h2>
+					<p>ข้อมูลสินค้า การขาย และการตั้งค่าจะถูกเก็บไว้ในเบราว์เซอร์ของเครื่องนี้ ใช้งานต่อได้แม้ไม่มีอินเทอร์เน็ต</p>
+					<div class="info-line"><span>สถานะพื้นที่จัดเก็บ</span><strong>พร้อมใช้งาน</strong></div>
+					<div class="info-line"><span>การพิมพ์ใบเสร็จ</span><strong>A4 / PDF</strong></div>
+				</div>
+			</div>
+		</section>
+	</main></div>
+<div class="modal-backdrop" id="productModal">
+	<div class="modal">
+		<div class="modal-heading">
+			<div>
+				<p class="eyebrow">คลังสินค้า</p>
+				<h2 id="productModalTitle">เพิ่มสินค้า</h2>
+			</div>
+			<button class="close-button" data-close="productModal">&times;</button></div>
+		<form id="productForm"><input type="hidden" name="id" /><label>ชื่อสินค้า *<input name="name" required="" placeholder="เช่น LED Racer 13.5w แสงขาว" type="text" /></label>
+			<div class="form-row"><label>SKU / บาร์โค้ด<input name="sku" placeholder="ระบบสร้างให้อัตโนมัติ" type="text" /><small class="field-hint">สินค้าใหม่จะรันเลขให้อัตโนมัติ แก้ไขเองได้</small></label><label>หมวดหมู่<select name="category" id="productCategorySelect"></select></label></div>
+			<div class="form-row"><label>ราคาขาย *<input name="price" type="number" min="0" step="0.01" required="" placeholder="0.00" /></label><label>จำนวนคงเหลือ<input name="stock" type="number" min="0" step="1" required="" placeholder="0" /></label></div>
+			<div class="modal-actions"><button type="button" class="outline-button" data-close="productModal">ยกเลิก</button><button class="primary-button" type="submit">บันทึกสินค้า</button></div>
+		</form></div>
+</div>
+<div class="modal-backdrop" id="paymentModal">
+	<div class="modal payment-modal">
+		<div class="modal-heading">
+			<div>
+				<p class="eyebrow">ชำระเงิน</p>
+				<h2>รับเงินจากลูกค้า</h2>
+			</div>
+			<button class="close-button" data-close="paymentModal">&times;</button></div>
+		<div class="payment-total"><span>ยอดที่ต้องชำระ</span><strong id="paymentTotal">฿0.00</strong></div>
+		<div class="payment-methods"><button class="method active" data-method="เงินสด">เงินสด</button><button class="method" data-method="โอนเงิน">โอนเงิน</button><button class="method" data-method="บัตร">บัตร</button></div>
+		<div class="payment-discount"><label for="paymentDiscountInput">ส่วนลด (%)</label><div><input id="paymentDiscountInput" type="number" min="0" max="100" step="0.01" placeholder="0" inputmode="decimal" /><strong id="paymentDiscountAmount">฿0.00</strong></div></div>
+		<label id="cashInputLabel">รับเงินมา<input id="cashReceived" type="number" min="0" step="0.01" placeholder="0.00" /></label>
+		<div class="change-box"><span>เงินทอน</span><strong id="changeText">฿0.00</strong></div>
+		<div class="modal-actions"><button type="button" class="outline-button" data-close="paymentModal">ยกเลิก</button><button class="primary-button" id="confirmPaymentBtn">ยืนยันการขาย</button></div>
+	</div>
+</div>
+<div class="modal-backdrop" id="receiptModal">
+	<div class="modal receipt-modal">
+		<div class="modal-heading no-print">
+			<div>
+				<p class="eyebrow">ขายสำเร็จ</p>
+				<h2>ใบเสร็จรับเงิน</h2>
+			</div>
+			<button class="close-button" data-close="receiptModal">&times;</button></div>
+		<div class="receipt-paper" id="receiptPaper"></div>
+		<div class="modal-actions no-print"><button class="outline-button" data-close="receiptModal">ปิด</button><button class="primary-button" id="printReceiptBtn">พิมพ์ใบเสร็จ A4</button></div>
+	</div>
+</div>
+<script src="../pos-offline/shop-scope.js"></script>
+<script src="../pos-offline/persistence-guard.js"></script>
+<script src="../pos-offline/imported-data.js"></script>
+<script src="../pos-offline/persistence-guard.js"></script>
+<script src="../pos-offline/category-sync.js"></script>
+<script src="../pos-offline/supabase-client.js"></script>
+<script src="../pos-offline/auth-support.js?v=43"></script>
+<script src="../pos-offline/app.js"></script>
+<script src="../pos-offline/sku-support.js"></script>
+<script src="../pos-offline/discount-support.js"></script>
+<script src="../pos-offline/product-search-support.js"></script>
+<script src="../pos-offline/unit-support.js"></script>
+<script src="../pos-offline/unit-display-support.js"></script>
+<script src="../pos-offline/receipt-template.js"></script>
+<script src="../pos-offline/cloud-sync.js"></script>
+</body>
+</html>
