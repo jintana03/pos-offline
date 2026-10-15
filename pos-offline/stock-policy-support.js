@@ -3,6 +3,37 @@
 
   document.documentElement.classList.add('shop-no-stock-check');
 
+  const SALES_KEY = 'pos_sales_v1';
+  const RESET_PENDING_KEY = 'pos_kitpaisan_sales_reset_pending_v1';
+  const RESET_DONE_KEY = 'pos_kitpaisan_sales_reset_done_v1';
+
+  function resetLocalSalesOnce() {
+    if (localStorage.getItem(RESET_DONE_KEY) === '1') return;
+    sales = [];
+    localStorage.setItem(SALES_KEY, '[]');
+    localStorage.setItem(RESET_PENDING_KEY, '1');
+    renderReports();
+  }
+
+  async function resetCloudSales() {
+    if (localStorage.getItem(RESET_PENDING_KEY) !== '1') return true;
+    if (!window.posSupabase?.hasSession?.()) return false;
+    try {
+      await window.posSupabase.query('/rest/v1/sales?shop_key=eq.kitpaisan', {
+        method: 'DELETE',
+        headers: { Prefer: 'return=minimal' }
+      });
+      localStorage.removeItem(RESET_PENDING_KEY);
+      localStorage.setItem(RESET_DONE_KEY, '1');
+      return true;
+    } catch (error) {
+      console.warn('Kitpaisan sales reset failed:', error.message);
+      return false;
+    }
+  }
+
+  resetLocalSalesOnce();
+
   function hideStockInput() {
     const input = document.querySelector('#productForm input[name="stock"]');
     if (!input) return;
@@ -51,6 +82,14 @@
       renderProducts();
       renderManageProducts();
       return result;
+    };
+  }
+
+  const cloudStart = window.posCloudSync?.start;
+  if (cloudStart) {
+    window.posCloudSync.start = async function () {
+      await resetCloudSales();
+      return cloudStart.apply(this, arguments);
     };
   }
 
