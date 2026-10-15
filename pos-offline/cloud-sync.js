@@ -12,6 +12,7 @@
   let started = false;
   let autoSyncStarted = false;
   let applying = false;
+  let hiddenColumnAvailable = null;
   const timers = new Map();
 
   function localJson(key, fallback) {
@@ -40,10 +41,20 @@
     const rows = localJson(PRODUCTS_KEY, []).map((product) => ({
       id: cloudId(product.id), owner_id: ownerId(), shop_key: SHOP_ID, name: product.name || '', sku: product.sku || null,
       category: product.category || 'อื่น ๆ', price: Number(product.price || 0),
-      stock: Number(product.stock || 0), unit: product.unit || 'ชิ้น', icon: product.icon || '📦',
+      stock: Number(product.stock || 0), unit: product.unit || 'ชิ้น', icon: product.icon || '📦', is_hidden: Boolean(product.hidden),
       deleted_at: null, updated_at: new Date().toISOString()
     }));
-    await upsert('products', rows, 'id');
+    if (hiddenColumnAvailable !== false) {
+      try {
+        await upsert('products', rows, 'id');
+        hiddenColumnAvailable = true;
+        return;
+      } catch (error) {
+        if (!String(error.message || '').toLowerCase().includes('is_hidden')) throw error;
+        hiddenColumnAvailable = false;
+      }
+    }
+    await upsert('products', rows.map(({ is_hidden, ...row }) => row), 'id');
   }
 
   async function pushSales() {
@@ -65,7 +76,8 @@
     const rows = await cloud.query(`/rest/v1/products?select=*&shop_key=eq.${encodeURIComponent(SHOP_ID)}&deleted_at=is.null&order=updated_at.asc`);
     if (!rows?.length) { await pushProducts(); return false; }
     applying = true;
-    products = rows.map((row) => ({ id: localId(row.id), name: row.name, sku: row.sku || '', category: row.category, price: Number(row.price || 0), stock: Number(row.stock || 0), unit: row.unit || 'ชิ้น', icon: row.icon || '📦' }));
+    const existingHidden = new Map(products.map((product) => [String(product.id), Boolean(product.hidden)]));
+    products = rows.map((row) => ({ id: localId(row.id), name: row.name, sku: row.sku || '', category: row.category, price: Number(row.price || 0), stock: Number(row.stock || 0), unit: row.unit || 'ชิ้น', icon: row.icon || '📦', hidden: row.is_hidden === undefined ? Boolean(existingHidden.get(String(localId(row.id)))) : Boolean(row.is_hidden) }));
     localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products));
     applying = false;
     return true;

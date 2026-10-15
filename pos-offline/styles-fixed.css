@@ -90,6 +90,12 @@ h2 { font-size: 16px; margin-bottom: 4px; }
 .product-price { font-size: 15px; font-weight: 800; margin-top: 13px; }
 .stock { font-size: 10px; color: var(--green); margin-top: 4px; }
 .stock.low { color: #d58b16; }
+.hidden-product-field { display: flex; align-items: flex-start; gap: 8px; padding: 10px 12px; border: 1px solid #e2e7f2; border-radius: 9px; background: #f8faff; color: var(--ink); font-size: 12px; }
+.hidden-product-field input { margin-top: 2px; }
+.hidden-product-field small { display: block; margin-left: 4px; color: var(--muted); font-size: 10px; font-weight: 400; }
+.hidden-product-actions { display: flex; gap: 6px; justify-content: flex-end; }
+.hidden-products-nav { color: #7887b6; }
+.hidden-products-nav.active { color: var(--blue); }
 html.shop-no-stock-check #productGrid .stock,
 html.shop-no-stock-check #productsView .table-panel table th:nth-child(6),
 html.shop-no-stock-check #productsView .table-panel table td:nth-child(6),
