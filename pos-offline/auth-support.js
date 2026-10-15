@@ -3,6 +3,8 @@
   const ADMINS_KEY = 'pos_admins_v1';
   const SESSION_KEY = 'pos_session_v1';
   const SESSION_USER_KEY = 'pos_session_user_v1';
+  const PERSISTENT_SESSION_KEY = 'pos_persistent_session_v1';
+  const PERSISTENT_SESSION_USER_KEY = 'pos_persistent_session_user_v1';
   const form = document.querySelector('#authForm');
   const gate = document.querySelector('#authGate');
   if (!form || !gate) return;
@@ -65,6 +67,8 @@
     gate.setAttribute('aria-hidden', 'true');
     sessionStorage.setItem(SESSION_KEY, '1');
     sessionStorage.setItem(SESSION_USER_KEY, username);
+    localStorage.setItem(PERSISTENT_SESSION_KEY, '1');
+    localStorage.setItem(PERSISTENT_SESSION_USER_KEY, username);
     renderAdminList();
   }
 
@@ -108,7 +112,7 @@
 
   function renderAdminList() {
     if (!adminList) return;
-    const current = sessionStorage.getItem(SESSION_USER_KEY) || '';
+    const current = sessionStorage.getItem(SESSION_USER_KEY) || localStorage.getItem(PERSISTENT_SESSION_USER_KEY) || '';
     adminList.innerHTML = readAdmins().map(admin => `<div class="admin-list-row"><span><strong>${admin.username}</strong>${admin.username === current ? '<small>กำลังใช้งาน</small>' : ''}</span><button class="small-button delete" type="button" data-remove-admin="${admin.username}">ลบ</button></div>`).join('');
     adminList.querySelectorAll('[data-remove-admin]').forEach(button => button.addEventListener('click', () => removeAdmin(button.dataset.removeAdmin)));
   }
@@ -146,6 +150,8 @@
     cloud?.signOut();
     sessionStorage.removeItem(SESSION_KEY);
     sessionStorage.removeItem(SESSION_USER_KEY);
+    localStorage.removeItem(PERSISTENT_SESSION_KEY);
+    localStorage.removeItem(PERSISTENT_SESSION_USER_KEY);
     document.body.classList.remove('pos-authenticated');
     gate.setAttribute('aria-hidden', 'false');
     form.reset();
@@ -159,13 +165,18 @@
 
   // Keep the active login when the user reloads the POS page.
   // A new browser tab still shows the login screen unless this tab has an active session.
-  const savedUser = sessionStorage.getItem(SESSION_USER_KEY) || '';
-  if (sessionStorage.getItem(SESSION_KEY) === '1' && cloud?.hasSession?.()) {
+  const savedUser = sessionStorage.getItem(SESSION_USER_KEY) || localStorage.getItem(PERSISTENT_SESSION_USER_KEY) || '';
+  const hasSavedLogin = cloud?.configured
+    ? cloud?.hasSession?.()
+    : sessionStorage.getItem(SESSION_KEY) === '1' || localStorage.getItem(PERSISTENT_SESSION_KEY) === '1';
+  if (hasSavedLogin) {
     setAuthenticated(savedUser || usernameInput.value.trim() || 'admin');
     window.setTimeout(() => window.posCloudSync?.start(), 0);
   } else {
     sessionStorage.removeItem(SESSION_KEY);
     sessionStorage.removeItem(SESSION_USER_KEY);
+    localStorage.removeItem(PERSISTENT_SESSION_KEY);
+    localStorage.removeItem(PERSISTENT_SESSION_USER_KEY);
   }
 
   form.addEventListener('submit', async (event) => {
