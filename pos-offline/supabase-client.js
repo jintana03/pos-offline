@@ -8,8 +8,32 @@
   }
 
   function saveSession(session) {
-    if (session?.access_token) localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+    if (session?.access_token) {
+      const saved = { ...session };
+      if (!saved.expires_at && saved.expires_in) {
+        saved.expires_at = Math.floor(Date.now() / 1000) + Number(saved.expires_in);
+      }
+      localStorage.setItem(SESSION_KEY, JSON.stringify(saved));
+    }
     else localStorage.removeItem(SESSION_KEY);
+  }
+
+  async function restoreSession() {
+    const session = readSession();
+    if (!session?.access_token) return false;
+    const expiresAt = Number(session.expires_at || 0);
+    if (!expiresAt || Math.floor(Date.now() / 1000) < expiresAt - 60) return true;
+    if (!session.refresh_token) return false;
+    try {
+      const data = await request('/auth/v1/token?grant_type=refresh_token', {
+        method: 'POST', body: JSON.stringify({ refresh_token: session.refresh_token })
+      });
+      saveSession(data);
+      return Boolean(data?.access_token);
+    } catch (_) {
+      saveSession(null);
+      return false;
+    }
   }
 
   function emailFor(username) {
@@ -63,6 +87,7 @@
   window.posSupabase = {
     configured: true,
     hasSession: () => Boolean(readSession()?.access_token),
+    restoreSession,
     userId: () => readSession()?.user?.id || '',
     signIn,
     signUp,

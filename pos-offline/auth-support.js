@@ -166,18 +166,21 @@
   // Keep the active login when the user reloads the POS page.
   // A new browser tab still shows the login screen unless this tab has an active session.
   const savedUser = sessionStorage.getItem(SESSION_USER_KEY) || localStorage.getItem(PERSISTENT_SESSION_USER_KEY) || '';
-  const hasSavedLogin = cloud?.configured
-    ? cloud?.hasSession?.()
-    : sessionStorage.getItem(SESSION_KEY) === '1' || localStorage.getItem(PERSISTENT_SESSION_KEY) === '1';
-  if (hasSavedLogin) {
-    setAuthenticated(savedUser || usernameInput.value.trim() || 'admin');
-    window.setTimeout(() => window.posCloudSync?.start(), 0);
-  } else {
+  async function restoreLogin() {
+    const hasSavedLogin = cloud?.configured
+      ? (cloud.restoreSession ? await cloud.restoreSession() : cloud.hasSession?.())
+      : sessionStorage.getItem(SESSION_KEY) === '1' || localStorage.getItem(PERSISTENT_SESSION_KEY) === '1';
+    if (hasSavedLogin) {
+      setAuthenticated(savedUser || usernameInput.value.trim() || 'admin');
+      window.setTimeout(() => window.posCloudSync?.start(), 0);
+      return;
+    }
     sessionStorage.removeItem(SESSION_KEY);
     sessionStorage.removeItem(SESSION_USER_KEY);
     localStorage.removeItem(PERSISTENT_SESSION_KEY);
     localStorage.removeItem(PERSISTENT_SESSION_USER_KEY);
   }
+  restoreLogin();
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
