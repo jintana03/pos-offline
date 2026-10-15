@@ -52,7 +52,8 @@
       if (product) {
         product.unit = unit;
         localStorage.setItem('pos_products_v1', JSON.stringify(products));
-        window.location.reload();
+        if (typeof renderProducts === 'function') renderProducts();
+        if (typeof renderManageProducts === 'function') renderManageProducts();
       }
     }, 0);
     return result;
