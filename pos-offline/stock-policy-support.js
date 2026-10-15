@@ -32,6 +32,25 @@
     }
   }
 
+  function hideStockElements() {
+    document.querySelectorAll('#productGrid .stock, #reportStock, #reportStock + small').forEach((element) => {
+      element.style.setProperty('display', 'none', 'important');
+      element.setAttribute('aria-hidden', 'true');
+    });
+
+    document.querySelector('#reportStock')?.closest('.stat-card')?.style.setProperty('display', 'none', 'important');
+
+    const table = document.querySelector('#productsView .table-panel table');
+    const header = table?.querySelector('thead tr');
+    const stockHeader = [...(header?.children || [])].findIndex((cell) => cell.textContent.trim() === 'คงเหลือ');
+    if (table && stockHeader >= 0) {
+      table.querySelectorAll(`tr > :nth-child(${stockHeader + 1})`).forEach((cell) => {
+        cell.style.setProperty('display', 'none', 'important');
+        cell.setAttribute('aria-hidden', 'true');
+      });
+    }
+  }
+
   resetLocalSalesOnce();
 
   function hideStockInput() {
@@ -96,6 +115,7 @@
   window.addToCart = unlimitedAddToCart;
   window.changeQty = unlimitedChangeQty;
   hideStockInput();
+  hideStockElements();
   allowProductButtons();
   keepStockUnchangedAfterSale();
 
@@ -106,5 +126,13 @@
 
   const grid = document.querySelector('#productGrid');
   if (grid) new MutationObserver(allowProductButtons).observe(grid, { childList: true });
-  document.addEventListener('click', () => window.setTimeout(hideStockInput, 0), true);
+  document.addEventListener('click', () => window.setTimeout(() => {
+    hideStockInput();
+    hideStockElements();
+  }, 0), true);
+
+  const productsView = document.querySelector('#productsView');
+  if (productsView) new MutationObserver(hideStockElements).observe(productsView, { childList: true, subtree: true });
+  const reportsView = document.querySelector('#reportsView');
+  if (reportsView) new MutationObserver(hideStockElements).observe(reportsView, { childList: true, subtree: true });
 })();
