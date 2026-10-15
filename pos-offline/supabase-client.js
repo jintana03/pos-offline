@@ -13,7 +13,9 @@
   }
 
   function emailFor(username) {
-    return `${String(username).trim().toLowerCase().replace(/[^a-z0-9._-]/g, '-')}@pos-offline.com`;
+    const value = String(username || '').trim().toLowerCase();
+    if (value.includes('@')) return value;
+    return `${value.replace(/[^a-z0-9._-]/g, '-')}@pos-offline.com`;
   }
 
   async function request(path, options = {}) {

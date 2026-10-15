@@ -82,6 +82,20 @@
     adminMessage.className = `admin-message ${type}`;
   }
 
+  function loginErrorMessage(error) {
+    const detail = String(error?.message || '').toLowerCase();
+    if (detail.includes('email not confirmed')) {
+      return 'บัญชีนี้ยังไม่ได้ยืนยันอีเมล ให้ยืนยันอีเมลใน Supabase หรือปิด Confirm email แล้วลองใหม่';
+    }
+    if (detail.includes('email rate limit') || detail.includes('rate limit')) {
+      return 'ลองเข้าสู่ระบบใหม่อีกครั้งภายหลัง ระบบจำกัดจำนวนการลองชั่วคราว';
+    }
+    if (detail.includes('invalid login credentials')) {
+      return 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง ตรวจสอบว่าบัญชีนี้มีอยู่ใน Supabase Auth แล้ว';
+    }
+    return 'ไม่พบบัญชีนี้ในระบบ หรือชื่อผู้ใช้และรหัสผ่านไม่ถูกต้อง';
+  }
+
   function configureMode() {
     confirmField.hidden = true;
     confirmInput.required = false;
@@ -171,7 +185,8 @@
         try {
           await cloud.signIn(username, password);
         } catch (cloudError) {
-          setMessage('ไม่พบบัญชีนี้ในระบบ หรือชื่อผู้ใช้และรหัสผ่านไม่ถูกต้อง');
+          console.warn('POS login failed:', cloudError);
+          setMessage(loginErrorMessage(cloudError));
           return;
         }
       }
