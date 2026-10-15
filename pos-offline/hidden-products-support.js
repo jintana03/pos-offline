@@ -28,7 +28,7 @@
 
   const hiddenField = document.createElement('label');
   hiddenField.className = 'hidden-product-field';
-  hiddenField.innerHTML = '<input id="productHiddenInput" name="hidden" type="checkbox" /> ซ่อนจากหน้าคิดเงิน <small>สินค้าเก็บไว้ในหน้าสินค้าที่ซ่อนไว้ และยังไม่นำขึ้นขาย</small>';
+  hiddenField.innerHTML = '<input id="productHiddenInput" name="hidden" type="checkbox" /><span class="hidden-product-label">ซ่อนจากหน้าคิดเงิน</span><small>เก็บไว้ในหน้าสินค้าที่ซ่อนไว้ และยังไม่นำขึ้นขาย</small>';
   form.querySelector('.modal-actions')?.before(hiddenField);
   const hiddenInput = hiddenField.querySelector('input');
 
