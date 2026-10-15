@@ -10,6 +10,7 @@
   const SHOP_ID = String(SHOP.id || 'default');
   const SHOP_NAME = SHOP.name || 'ร้านค้าของฉัน';
   let started = false;
+  let autoSyncStarted = false;
   let applying = false;
   const timers = new Map();
 
@@ -111,6 +112,17 @@
     } finally { started = false; }
   }
 
+  function startAutoSync() {
+    if (autoSyncStarted) return;
+    autoSyncStarted = true;
+    const refreshWhenActive = () => {
+      if (document.visibilityState === 'visible') syncNow();
+    };
+    window.addEventListener('focus', refreshWhenActive);
+    document.addEventListener('visibilitychange', refreshWhenActive);
+    window.setInterval(refreshWhenActive, 30000);
+  }
+
   function queue(key) {
     if (applying || !cloud.hasSession()) return;
     clearTimeout(timers.get(key));
@@ -125,5 +137,11 @@
     if (this === localStorage && [PRODUCTS_KEY, SALES_KEY, SETTINGS_KEY].includes(key)) queue(key);
   };
 
-  window.posCloudSync = { start: syncNow, syncNow };
+  window.posCloudSync = {
+    start: async function () {
+      startAutoSync();
+      return syncNow();
+    },
+    syncNow
+  };
 })();
