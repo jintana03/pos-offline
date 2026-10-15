@@ -21,9 +21,6 @@
   const adminMessage = document.querySelector('#adminMessage');
   const cloud = window.posSupabase;
 
-  // Do not let a previous account sync before the new login is completed.
-  cloud?.clearSession?.();
-
   function readAuth() {
     try { return JSON.parse(localStorage.getItem(AUTH_KEY) || 'null'); } catch (_) { return null; }
   }
@@ -157,11 +154,19 @@
     window.scrollTo(0, 0);
   }
 
-  // Require a fresh login whenever the POS page is opened or reloaded.
-  sessionStorage.removeItem(SESSION_KEY);
-  sessionStorage.removeItem(SESSION_USER_KEY);
   configureMode();
   renderAdminList();
+
+  // Keep the active login when the user reloads the POS page.
+  // A new browser tab still shows the login screen unless this tab has an active session.
+  const savedUser = sessionStorage.getItem(SESSION_USER_KEY) || '';
+  if (sessionStorage.getItem(SESSION_KEY) === '1' && cloud?.hasSession?.()) {
+    setAuthenticated(savedUser || usernameInput.value.trim() || 'admin');
+    window.setTimeout(() => window.posCloudSync?.start(), 0);
+  } else {
+    sessionStorage.removeItem(SESSION_KEY);
+    sessionStorage.removeItem(SESSION_USER_KEY);
+  }
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
