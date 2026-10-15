@@ -167,9 +167,15 @@
   // A new browser tab still shows the login screen unless this tab has an active session.
   const savedUser = sessionStorage.getItem(SESSION_USER_KEY) || localStorage.getItem(PERSISTENT_SESSION_USER_KEY) || '';
   async function restoreLogin() {
-    const hasSavedLogin = cloud?.configured
+    const cloudSession = cloud?.configured
       ? (cloud.restoreSession ? await cloud.restoreSession() : cloud.hasSession?.())
-      : sessionStorage.getItem(SESSION_KEY) === '1' || localStorage.getItem(PERSISTENT_SESSION_KEY) === '1';
+      : false;
+    const hasLocalLogin = Boolean(savedUser) && (
+      sessionStorage.getItem(SESSION_KEY) === '1' || localStorage.getItem(PERSISTENT_SESSION_KEY) === '1'
+    );
+    // Keep the POS open after refresh when Supabase is temporarily unavailable.
+    // Cloud sync will resume automatically as soon as a valid session is available.
+    const hasSavedLogin = cloud?.configured ? (cloudSession || hasLocalLogin) : hasLocalLogin;
     if (hasSavedLogin) {
       setAuthenticated(savedUser || usernameInput.value.trim() || 'admin');
       window.setTimeout(() => window.posCloudSync?.start(), 0);
