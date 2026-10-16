@@ -68,18 +68,16 @@
     if (!Array.isArray(window.POS_IMPORTED_PRODUCTS) || !window.POS_IMPORTED_PRODUCTS.length) return;
     const version = String(window.POS_CATALOG_COPY_VERSION || '');
     const marker = localStorage.getItem('pos_catalog_copy_v1');
-    if (window.POS_CATALOG_COPY_PENDING && version) {
-      await copyImportedCatalog();
-      return;
-    }
-    if (!version || marker !== version) return;
+    if (!version) return;
 
-    // A previous cached build could have written the local marker before the
-    // database request completed. Verify the remote table before trusting it.
+    // Never trust the browser marker by itself. A previous cached build may
+    // have written it even though the database request failed.
     const rows = await cloud.query(`/rest/v1/products?select=id&shop_key=eq.${encodeURIComponent(SHOP_ID)}&deleted_at=is.null&limit=1`);
     if (rows?.length) return;
-    window.POS_CATALOG_COPY_PENDING = true;
-    await copyImportedCatalog();
+    if (window.POS_CATALOG_COPY_PENDING || marker === version) {
+      window.POS_CATALOG_COPY_PENDING = true;
+      await copyImportedCatalog();
+    }
   }
 
   async function pushSales() {
@@ -153,6 +151,8 @@
     } catch (error) {
       console.warn('Cloud sync failed:', error.message);
       document.body.dataset.cloudStatus = 'offline';
+      document.body.dataset.cloudError = error.message || 'ไม่ทราบสาเหตุ';
+      window.dispatchEvent(new CustomEvent('pos-cloud-sync-error', { detail: { message: error.message || 'ไม่ทราบสาเหตุ' } }));
     } finally { started = false; }
   }
 

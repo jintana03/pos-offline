@@ -4,7 +4,15 @@
   const imported = Array.isArray(window.POS_IMPORTED_PRODUCTS) ? window.POS_IMPORTED_PRODUCTS : [];
   const version = String(window.POS_CATALOG_COPY_VERSION || 'kitpaisan-catalog-20261016-v1');
   const markerKey = 'pos_catalog_copy_v1';
-  if (!imported.length || localStorage.getItem(markerKey) === version) return;
+  window.POS_CATALOG_COPY_VERSION = version;
+  if (!imported.length) return;
+  if (localStorage.getItem(markerKey) === version) {
+    // The marker only means a previous browser attempt finished. The remote
+    // database may still be empty (for example after a failed RLS request), so
+    // let cloud-sync verify it before deciding that the catalog is complete.
+    window.POS_CATALOG_COPY_PENDING = false;
+    return;
+  }
 
   localStorage.setItem('pos_products_v1', JSON.stringify(imported.map((product) => ({ ...product }))));
   const currentSettings = (() => {
@@ -19,5 +27,4 @@
     }));
   }
   window.POS_CATALOG_COPY_PENDING = true;
-  window.POS_CATALOG_COPY_VERSION = version;
 })();
