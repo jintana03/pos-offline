@@ -7,6 +7,12 @@ alter table public.shop_settings add column if not exists shop_key text;
 alter table public.products add column if not exists shop_key text;
 alter table public.sales add column if not exists shop_key text;
 
+-- SKU may be reused by separate shops, but not duplicated within one shop.
+drop index if exists public.products_sku_unique;
+create unique index if not exists products_shop_sku_unique
+  on public.products (shop_key, sku)
+  where shop_key is not null and sku is not null and sku <> '' and deleted_at is null;
+
 alter table public.shops alter column owner_id drop not null;
 alter table public.shops drop constraint if exists shops_owner_id_key;
 
