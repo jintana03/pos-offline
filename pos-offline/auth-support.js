@@ -173,9 +173,9 @@
     const hasLocalLogin = Boolean(savedUser) && (
       sessionStorage.getItem(SESSION_KEY) === '1' || localStorage.getItem(PERSISTENT_SESSION_KEY) === '1'
     );
-    // Keep the POS open after refresh when Supabase is temporarily unavailable.
-    // Cloud sync will resume automatically as soon as a valid session is available.
-    const hasSavedLogin = cloud?.configured ? (cloudSession || hasLocalLogin) : hasLocalLogin;
+    // In cloud mode, a local marker alone is not enough: it can show the POS
+    // while the Supabase session is gone, which prevents cross-device syncing.
+    const hasSavedLogin = cloud?.configured ? Boolean(cloudSession) : hasLocalLogin;
     if (hasSavedLogin) {
       setAuthenticated(savedUser || usernameInput.value.trim() || 'admin');
       window.setTimeout(() => window.posCloudSync?.start(), 0);
