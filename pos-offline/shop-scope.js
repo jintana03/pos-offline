@@ -5,7 +5,9 @@
     'pos_products_v1',
     'pos_sales_v1',
     'pos_settings_v1',
-    'pos_cloud_owner_v1'
+    'pos_cloud_owner_v1',
+    'pos_sku_sequence_v1',
+    'pos_catalog_copy_v1'
   ]);
   const prefix = `pos_shop_${shopId}_`;
   const keyFor = (key) => scopedKeys.has(key) ? `${prefix}${key}` : key;

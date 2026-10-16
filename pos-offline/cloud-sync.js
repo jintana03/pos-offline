@@ -57,6 +57,13 @@
     await upsert('products', rows.map(({ is_hidden, ...row }) => row), 'id');
   }
 
+  async function copyImportedCatalog() {
+    if (!window.POS_CATALOG_COPY_PENDING || !window.POS_CATALOG_COPY_VERSION) return;
+    await pushProducts();
+    localStorage.setItem('pos_catalog_copy_v1', window.POS_CATALOG_COPY_VERSION);
+    window.POS_CATALOG_COPY_PENDING = false;
+  }
+
   async function pushSales() {
     const rows = localJson(SALES_KEY, []).map((sale) => ({
       number: cloudId(sale.number), owner_id: ownerId(), shop_key: SHOP_ID, sale_date: sale.date || new Date().toISOString(),
@@ -115,6 +122,7 @@
     try {
       switchLocalOwner();
       await pushShop();
+      await copyImportedCatalog();
       const pulled = await Promise.all([pullProducts(), pullSales(), pullSettings()]);
       if (pulled.some(Boolean)) { renderSettings(); renderCategories(); renderProducts(); renderManageProducts(); renderReports(); renderCart(); }
       document.body.dataset.cloudStatus = 'connected';
