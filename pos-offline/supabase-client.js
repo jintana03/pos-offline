@@ -4,12 +4,10 @@
   const SESSION_KEY = 'pos_supabase_session_v1';
 
   function readSession() {
-    for (const storage of [localStorage, sessionStorage]) {
-      try {
-        const saved = JSON.parse(storage.getItem(SESSION_KEY) || 'null');
-        if (saved?.access_token) return saved;
-      } catch (_) {}
-    }
+    try {
+      const saved = JSON.parse(sessionStorage.getItem(SESSION_KEY) || 'null');
+      if (saved?.access_token) return saved;
+    } catch (_) {}
     return null;
   }
 
@@ -20,8 +18,8 @@
         saved.expires_at = Math.floor(Date.now() / 1000) + Number(saved.expires_in);
       }
       const serialized = JSON.stringify(saved);
-      try { localStorage.setItem(SESSION_KEY, serialized); } catch (_) {}
       try { sessionStorage.setItem(SESSION_KEY, serialized); } catch (_) {}
+      try { localStorage.removeItem(SESSION_KEY); } catch (_) {}
     } else {
       try { localStorage.removeItem(SESSION_KEY); } catch (_) {}
       try { sessionStorage.removeItem(SESSION_KEY); } catch (_) {}
