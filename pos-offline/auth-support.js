@@ -173,9 +173,9 @@
     const hasLocalLogin = Boolean(savedUser) && (
       sessionStorage.getItem(SESSION_KEY) === '1' || localStorage.getItem(PERSISTENT_SESSION_KEY) === '1'
     );
-    // In cloud mode, a local marker alone is not enough: it can show the POS
-    // while the Supabase session is gone, which prevents cross-device syncing.
-    const hasSavedLogin = cloud?.configured ? Boolean(cloudSession) : hasLocalLogin;
+    // Keep this device signed in between link opens and reloads. Logging out
+    // removes the local marker and requires a new Supabase login.
+    const hasSavedLogin = cloud?.configured ? (Boolean(cloudSession) || hasLocalLogin) : hasLocalLogin;
     if (hasSavedLogin) {
       setAuthenticated(savedUser || usernameInput.value.trim() || 'admin');
       window.setTimeout(() => window.posCloudSync?.start(), 0);
