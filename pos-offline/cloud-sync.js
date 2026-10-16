@@ -64,6 +64,24 @@
     window.POS_CATALOG_COPY_PENDING = false;
   }
 
+  async function ensureImportedCatalog() {
+    if (!Array.isArray(window.POS_IMPORTED_PRODUCTS) || !window.POS_IMPORTED_PRODUCTS.length) return;
+    const version = String(window.POS_CATALOG_COPY_VERSION || '');
+    const marker = localStorage.getItem('pos_catalog_copy_v1');
+    if (window.POS_CATALOG_COPY_PENDING && version) {
+      await copyImportedCatalog();
+      return;
+    }
+    if (!version || marker !== version) return;
+
+    // A previous cached build could have written the local marker before the
+    // database request completed. Verify the remote table before trusting it.
+    const rows = await cloud.query(`/rest/v1/products?select=id&shop_key=eq.${encodeURIComponent(SHOP_ID)}&deleted_at=is.null&limit=1`);
+    if (rows?.length) return;
+    window.POS_CATALOG_COPY_PENDING = true;
+    await copyImportedCatalog();
+  }
+
   async function pushSales() {
     const rows = localJson(SALES_KEY, []).map((sale) => ({
       number: cloudId(sale.number), owner_id: ownerId(), shop_key: SHOP_ID, sale_date: sale.date || new Date().toISOString(),
@@ -122,7 +140,7 @@
     try {
       switchLocalOwner();
       await pushShop();
-      await copyImportedCatalog();
+      await ensureImportedCatalog();
       const pulled = await Promise.all([pullProducts(), pullSales(), pullSettings()]);
       if (pulled.some(Boolean)) { renderSettings(); renderCategories(); renderProducts(); renderManageProducts(); renderReports(); renderCart(); }
       document.body.dataset.cloudStatus = 'connected';
