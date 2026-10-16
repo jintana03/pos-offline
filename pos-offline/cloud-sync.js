@@ -139,7 +139,13 @@
     started = true;
     try {
       switchLocalOwner();
-      await pushShop();
+      // Shop metadata must not block the product catalog from being seeded.
+      // Older pos-shop1 databases may not have the shops migration yet.
+      try {
+        await pushShop();
+      } catch (error) {
+        console.warn('Cloud shop metadata sync failed:', error.message);
+      }
       await ensureImportedCatalog();
       const pulled = await Promise.all([pullProducts(), pullSales(), pullSettings()]);
       if (pulled.some(Boolean)) { renderSettings(); renderCategories(); renderProducts(); renderManageProducts(); renderReports(); renderCart(); }
