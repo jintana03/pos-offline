@@ -6,6 +6,11 @@
   const SALES_KEY = 'pos_sales_v1';
   const SETTINGS_KEY = 'pos_settings_v1';
   const OWNER_KEY = 'pos_cloud_owner_v1';
+  const DIRTY_KEYS = {
+    products: 'pos_sync_dirty_products_v1',
+    sales: 'pos_sync_dirty_sales_v1',
+    settings: 'pos_sync_dirty_settings_v1'
+  };
   const SHOP = window.POS_SHOP || { id: 'default', name: 'ร้านค้าของฉัน' };
   const SHOP_ID = String(SHOP.id || 'default');
   const SHOP_NAME = SHOP.name || 'ร้านค้าของฉัน';
@@ -22,6 +27,9 @@
   function ownerId() { return cloud.userId(); }
   function cloudId(id) { return `${SHOP_ID}:${id}`; }
   function localId(id) { return String(id || '').startsWith(`${SHOP_ID}:`) ? String(id).slice(SHOP_ID.length + 1) : id; }
+  function dirty(key) { return localStorage.getItem(DIRTY_KEYS[key]) === '1'; }
+  function markDirty(key) { localStorage.setItem(DIRTY_KEYS[key], '1'); }
+  function clearDirty(key) { localStorage.removeItem(DIRTY_KEYS[key]); }
 
   async function upsert(table, rows, conflict) {
     if (!rows.length) return;
@@ -54,6 +62,7 @@
       try {
         await upsert('products', rows, 'id');
         hiddenColumnAvailable = true;
+        clearDirty('products');
         return;
       } catch (error) {
         if (!String(error.message || '').toLowerCase().includes('is_hidden')) throw error;
@@ -61,6 +70,7 @@
       }
     }
     await upsert('products', rows.map(({ is_hidden, ...row }) => row), 'id');
+    clearDirty('products');
   }
 
   async function copyImportedCatalog() {
@@ -94,11 +104,13 @@
       payment: sale.payment || 'เงินสด', data: sale, updated_at: new Date().toISOString()
     }));
     await upsert('sales', rows, 'number');
+    clearDirty('sales');
   }
 
   async function pushSettings() {
     const settings = localJson(SETTINGS_KEY, {});
     await upsert('shop_settings', [{ id: `shop-${SHOP_ID}`, owner_id: ownerId(), shop_key: SHOP_ID, store_name: settings.storeName || SHOP_NAME, store_address: settings.storeAddress || '', store_phone: settings.storePhone || '', tax_id: settings.taxId || '', updated_at: new Date().toISOString() }], 'shop_key');
+    clearDirty('settings');
   }
 
   async function pullProducts() {
@@ -151,6 +163,11 @@
         console.warn('Cloud shop metadata sync failed:', error.message);
       }
       await ensureImportedCatalog();
+      // Upload local edits before pulling remote rows, so a quick refresh
+      // cannot replace a newly saved price with the old DB value.
+      if (dirty('products')) await pushProducts();
+      if (dirty('sales')) await pushSales();
+      if (dirty('settings')) await pushSettings();
       const pulled = await Promise.all([pullProducts(), pullSales(), pullSettings()]);
       if (pulled.some(Boolean)) { renderSettings(); renderCategories(); renderProducts(); renderManageProducts(); renderReports(); renderCart(); }
       document.body.dataset.cloudStatus = 'connected';
@@ -175,6 +192,9 @@
 
   function queue(key) {
     if (applying || !cloud.hasSession()) return;
+    if (key === PRODUCTS_KEY) markDirty('products');
+    if (key === SALES_KEY) markDirty('sales');
+    if (key === SETTINGS_KEY) markDirty('settings');
     clearTimeout(timers.get(key));
     timers.set(key, setTimeout(async () => {
       try { if (key === PRODUCTS_KEY) await pushProducts(); if (key === SALES_KEY) await pushSales(); if (key === SETTINGS_KEY) { await pushShop(); await pushSettings(); } } catch (error) { console.warn('Cloud save failed:', error.message); }
