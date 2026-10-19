@@ -186,6 +186,8 @@ td:first-child { font-weight: 700; color: var(--ink); }
 /* Invoice / A4 receipt */
 .invoice-paper { background: #fff; color: #36508f; border: 1px solid #c8d0e6; padding: 28px 32px; min-height: 760px; font-family: Arial, "Noto Sans Thai", sans-serif; }
 .invoice-page + .invoice-page { margin-top: 24px; }
+.invoice-page { display: flex; flex-direction: column; box-sizing: border-box; }
+.invoice-footer-block { margin-top: auto; }
 .invoice-header { display: grid; grid-template-columns: 1.2fr 1fr .95fr; gap: 16px; align-items: start; border-bottom: 1px solid #7890c4; padding-bottom: 14px; }
 .invoice-shop h3 { font-size: 18px; margin: 0 0 5px; color: #2e4b95; }
 .invoice-shop strong { font-size: 12px; color: #4260a5; }
