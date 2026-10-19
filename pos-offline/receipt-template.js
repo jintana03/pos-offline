@@ -88,8 +88,6 @@
       <td class="col-discount">-</td>
       <td class="col-amount">${baht(item.price * item.qty)}</td>
     </tr>`).join('');
-    const blankRows = isLastPage ? Math.max(0, 5 - items.length) : 0;
-    const blanks = Array.from({ length: blankRows }, () => '<tr class="blank-row"><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>').join('');
     const address = shop.storeAddress || 'ที่อยู่ร้านค้า';
     const storePhone = shop.storePhone ? `โทร. ${esc(shop.storePhone)}` : '';
     const totalQty = sale.items.reduce((sum, item) => sum + Number(item.qty || 0), 0);
@@ -101,7 +99,7 @@
     return `<div class="invoice-paper invoice-page">
       <header class="invoice-header"><div class="invoice-shop"><h3>${esc(shop.storeName || 'ร้านค้าของฉัน')}</h3>${storePhone ? `<strong>${storePhone}</strong>` : ''}<p>${esc(address)}</p></div><div class="invoice-title-box"><h2>ใบเสร็จรับเงิน</h2><strong>RECEIPT / TAX INVOICE</strong></div><div class="invoice-meta"><div><span>Date :</span><b>${dateText}</b></div><div><span>Inv. No. :</span><b>${esc(sale.number)}</b></div><div><span>Salesman Code :</span><b>—</b></div><div><span>Time :</span><b>${time}</b></div><div><span>Page :</span><b>${page} / ${totalPages}</b></div></div></header>
       <section class="invoice-customer"><div><span>Customer Name / ชื่อลูกค้า :</span><b>${esc(sale.customerName || 'เงินสด')}</b></div><div><span>Customer No. / รหัสลูกค้า :</span><b>${esc(sale.customerNo || '999')}</b></div><div><span>Reference No. / เลขที่อ้างอิง :</span><b>${esc(sale.referenceNo || '—')}</b></div></section>
-      <table class="invoice-items"><colgroup><col style="width:6%"><col style="width:14%"><col style="width:28%"><col style="width:8%"><col style="width:7%"><col style="width:14%"><col style="width:10%"><col style="width:13%"></colgroup><thead><tr><th>Item<br><small>ลำดับ</small></th><th>Article Number<br><small>รหัสสินค้า</small></th><th>Article Description<br><small>รายการ</small></th><th>Qty<br><small>จำนวน</small></th><th>Unit<br><small>หน่วย</small></th><th>Price/Unit<br><small>ราคาต่อหน่วย</small></th><th>Discount<br><small>ส่วนลด</small></th><th>Amount<br><small>จำนวนเงิน</small></th></tr></thead><tbody>${rows}${blanks}</tbody></table>
+      <table class="invoice-items"><colgroup><col style="width:6%"><col style="width:14%"><col style="width:28%"><col style="width:8%"><col style="width:7%"><col style="width:14%"><col style="width:10%"><col style="width:13%"></colgroup><thead><tr><th>Item<br><small>ลำดับ</small></th><th>Article Number<br><small>รหัสสินค้า</small></th><th>Article Description<br><small>รายการ</small></th><th>Qty<br><small>จำนวน</small></th><th>Unit<br><small>หน่วย</small></th><th>Price/Unit<br><small>ราคาต่อหน่วย</small></th><th>Discount<br><small>ส่วนลด</small></th><th>Amount<br><small>จำนวนเงิน</small></th></tr></thead><tbody>${rows}</tbody></table>
       ${footer}
     </div>`;
   }
