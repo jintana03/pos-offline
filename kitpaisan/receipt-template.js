@@ -93,10 +93,10 @@
     const address = shop.storeAddress || 'ที่อยู่ร้านค้า';
     const storePhone = shop.storePhone ? `โทร. ${esc(shop.storePhone)}` : '';
     const totalQty = sale.items.reduce((sum, item) => sum + Number(item.qty || 0), 0);
-    const footer = isLastPage ? `<section class="invoice-bottom">
+    const footer = isLastPage ? `<div class="invoice-footer-block"><section class="invoice-bottom">
       <div class="invoice-note"><p>ได้รับสินค้าถูกต้องตามรายการข้างต้น</p><p>ใบเสร็จรับเงินจะสมบูรณ์เมื่อได้รับเงินเรียบร้อยแล้ว</p><p class="note-en">Received the goods in good order and condition.</p></div>
       <div class="invoice-totals"><div><span>รวมเงิน / Subtotal</span><b>${baht(sale.subtotal ?? sale.total)}</b></div><div><span>ส่วนลด / Discount (${Number(sale.discountPercent || 0)}%)</span><b>${baht(sale.discount)}</b></div><div class="invoice-grand"><span>ยอดสุทธิ / Net Total</span><b>${baht(sale.total)}</b></div></div>
-    </section><div class="invoice-amount-text">จำนวนรายการ ${totalQty} ชิ้น &nbsp; | &nbsp; ชำระโดย ${esc(sale.payment)}</div><footer class="invoice-signatures"><div><span>ผู้รับสินค้า</span><i></i><small>Receiver</small></div><div><span>วันที่</span><i></i><small>Date</small></div><div><span>ผู้ส่งสินค้า</span><i></i><small>Delivered by</small></div><div><span>ผู้รับเงิน / ผู้อนุมัติ</span><i></i><small>Authorized signature</small></div></footer>` : '';
+    </section><div class="invoice-amount-text">จำนวนรายการ ${totalQty} ชิ้น &nbsp; | &nbsp; ชำระโดย ${esc(sale.payment)}</div><footer class="invoice-signatures"><div><span>ผู้รับสินค้า</span><i></i><small>Receiver</small></div><div><span>วันที่</span><i></i><small>Date</small></div><div><span>ผู้ส่งสินค้า</span><i></i><small>Delivered by</small></div><div><span>ผู้รับเงิน / ผู้อนุมัติ</span><i></i><small>Authorized signature</small></div></footer></div>` : '';
 
     return `<div class="invoice-paper invoice-page">
       <header class="invoice-header"><div class="invoice-shop"><h3>${esc(shop.storeName || 'ร้านค้าของฉัน')}</h3>${storePhone ? `<strong>${storePhone}</strong>` : ''}<p>${esc(address)}</p></div><div class="invoice-title-box"><h2>ใบเสร็จรับเงิน</h2><strong>RECEIPT / TAX INVOICE</strong></div><div class="invoice-meta"><div><span>Date :</span><b>${dateText}</b></div><div><span>Inv. No. :</span><b>${esc(sale.number)}</b></div><div><span>Salesman Code :</span><b>—</b></div><div><span>Time :</span><b>${time}</b></div><div><span>Page :</span><b>${page} / ${totalPages}</b></div></div></header>
