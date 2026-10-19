@@ -25,11 +25,17 @@
 
   async function upsert(table, rows, conflict) {
     if (!rows.length) return;
-    await cloud.query(`/rest/v1/${table}?on_conflict=${conflict}`, {
-      method: 'POST',
-      headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
-      body: JSON.stringify(rows)
-    });
+    // Keep large catalogs below the REST payload/statement limits. A failed
+    // single request used to make price edits appear to save locally while
+    // nothing reached Supabase.
+    for (let index = 0; index < rows.length; index += 100) {
+      const batch = rows.slice(index, index + 100);
+      await cloud.query(`/rest/v1/${table}?on_conflict=${conflict}`, {
+        method: 'POST',
+        headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
+        body: JSON.stringify(batch)
+      });
+    }
   }
 
   async function pushShop() {
