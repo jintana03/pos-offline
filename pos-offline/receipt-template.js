@@ -72,7 +72,7 @@
 (function () {
   const esc = (value) => String(value ?? '').replace(/[&<>'"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
   const baht = (value) => `฿${Number(value || 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  const ITEMS_PER_PAGE = 15;
+  const ITEMS_PER_PAGE = 21;
 
   function renderInvoicePage(sale, shop, items, page, totalPages, isLastPage) {
     const date = new Date(sale.date);
