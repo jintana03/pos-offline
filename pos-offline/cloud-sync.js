@@ -192,10 +192,16 @@
       await ensureImportedCatalog();
       // Upload local edits before pulling remote rows, so a quick refresh
       // cannot replace a newly saved price with the old DB value.
-      if (dirty('products')) await pushProducts();
+      const productsWereDirty = dirty('products');
+      if (productsWereDirty) await pushProducts();
       if (dirty('sales')) await pushSales();
       if (dirty('settings')) await pushSettings();
-      const pulled = await Promise.all([pullProducts(), pullSales(), pullSettings()]);
+      // Do not immediately pull the catalog after a local edit. The push above
+      // is authoritative for this browser; pulling in the same turn can still
+      // return the previous row while the REST replica catches up and erase a
+      // freshly edited price from the screen. The next scheduled sync will
+      // pull it after the dirty flag has been cleared.
+      const pulled = await Promise.all([productsWereDirty ? Promise.resolve(false) : pullProducts(), pullSales(), pullSettings()]);
       if (pulled.some(Boolean)) { renderSettings(); renderCategories(); renderProducts(); renderManageProducts(); renderReports(); renderCart(); }
       document.body.dataset.cloudStatus = 'connected';
     } catch (error) {
@@ -218,10 +224,10 @@
   }
 
   function queue(key) {
-    if (applying || !cloud.hasSession()) return;
     if (key === PRODUCTS_KEY) markDirty('products');
     if (key === SALES_KEY) markDirty('sales');
     if (key === SETTINGS_KEY) markDirty('settings');
+    if (applying || !cloud.hasSession()) return;
     clearTimeout(timers.get(key));
     timers.set(key, setTimeout(async () => {
       try { if (key === PRODUCTS_KEY) await pushProducts(); if (key === SALES_KEY) await pushSales(); if (key === SETTINGS_KEY) { await pushShop(); await pushSettings(); } } catch (error) { console.warn('Cloud save failed:', error.message); }
