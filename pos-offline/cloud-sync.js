@@ -11,6 +11,8 @@
     sales: 'pos_sync_dirty_sales_v1',
     settings: 'pos_sync_dirty_settings_v1'
   };
+  const PRODUCTS_SNAPSHOT_KEY = 'pos_sync_products_snapshot_v1';
+  const DIRTY_PRODUCT_IDS_KEY = 'pos_sync_dirty_product_ids_v1';
   const SHOP = window.POS_SHOP || { id: 'default', name: 'ร้านค้าของฉัน' };
   const SHOP_ID = String(SHOP.id || 'default');
   const SHOP_NAME = SHOP.name || 'ร้านค้าของฉัน';
@@ -30,6 +32,31 @@
   function dirty(key) { return localStorage.getItem(DIRTY_KEYS[key]) === '1'; }
   function markDirty(key) { localStorage.setItem(DIRTY_KEYS[key], '1'); }
   function clearDirty(key) { localStorage.removeItem(DIRTY_KEYS[key]); }
+  function productSignature(product) {
+    return JSON.stringify({ id: String(product.id), name: product.name || '', sku: product.sku || '', category: product.category || '', price: Number(product.price || 0), stock: Number(product.stock || 0), unit: product.unit || 'ชิ้น', icon: product.icon || '📦', hidden: Boolean(product.hidden) });
+  }
+  function productSnapshot() { return localJson(PRODUCTS_SNAPSHOT_KEY, {}); }
+  function dirtyProductIds() { return localJson(DIRTY_PRODUCT_IDS_KEY, []); }
+  function markChangedProducts() {
+    const baseline = productSnapshot();
+    const dirtyIds = new Set(dirtyProductIds().map(String));
+    for (const product of localJson(PRODUCTS_KEY, [])) {
+      const id = String(product.id);
+      if (!baseline[id] || baseline[id] !== productSignature(product)) dirtyIds.add(id);
+    }
+    localStorage.setItem(DIRTY_PRODUCT_IDS_KEY, JSON.stringify([...dirtyIds]));
+  }
+  function rememberProducts(list) {
+    const snapshot = productSnapshot();
+    for (const product of list) snapshot[String(product.id)] = productSignature(product);
+    localStorage.setItem(PRODUCTS_SNAPSHOT_KEY, JSON.stringify(snapshot));
+  }
+  function clearChangedProducts(ids) {
+    const removed = new Set(ids.map(String));
+    const remaining = dirtyProductIds().filter((id) => !removed.has(String(id)));
+    if (remaining.length) localStorage.setItem(DIRTY_PRODUCT_IDS_KEY, JSON.stringify(remaining));
+    else localStorage.removeItem(DIRTY_PRODUCT_IDS_KEY);
+  }
 
   async function upsert(table, rows, conflict) {
     if (!rows.length) return;
@@ -63,8 +90,11 @@
     await upsert('shops', [{ owner_id: ownerId(), shop_key: SHOP_ID, name: settings.storeName || SHOP_NAME, updated_at: new Date().toISOString() }], 'shop_key');
   }
 
-  async function pushProducts() {
-    const rows = localJson(PRODUCTS_KEY, []).map((product) => ({
+  async function pushProducts({ onlyDirty = false } = {}) {
+    const localProducts = localJson(PRODUCTS_KEY, []);
+    const dirtyIds = new Set(dirtyProductIds().map(String));
+    const sourceProducts = onlyDirty && dirtyIds.size ? localProducts.filter((product) => dirtyIds.has(String(product.id))) : localProducts;
+    const rows = sourceProducts.map((product) => ({
       id: cloudId(product.id), owner_id: ownerId(), shop_key: SHOP_ID, name: product.name || '', sku: product.sku || null,
       category: product.category || 'อื่น ๆ', price: Number(product.price || 0),
       stock: Number(product.stock || 0), unit: product.unit || 'ชิ้น', icon: product.icon || '📦', is_hidden: Boolean(product.hidden),
@@ -75,6 +105,8 @@
         await upsert('products', rows, 'id');
         hiddenColumnAvailable = true;
         clearDirty('products');
+        clearChangedProducts(sourceProducts.map((product) => product.id));
+        rememberProducts(sourceProducts);
         return;
       } catch (error) {
         if (!String(error.message || '').toLowerCase().includes('is_hidden')) throw error;
@@ -83,6 +115,8 @@
     }
     await upsert('products', rows.map(({ is_hidden, ...row }) => row), 'id');
     clearDirty('products');
+    clearChangedProducts(sourceProducts.map((product) => product.id));
+    rememberProducts(sourceProducts);
   }
 
   async function copyImportedCatalog() {
@@ -140,14 +174,21 @@
     clearDirty('settings');
   }
 
-  async function pullProducts() {
+  async function pullProducts(preserveIds = []) {
     const rows = await queryAll(`/rest/v1/products?select=*&shop_key=eq.${encodeURIComponent(SHOP_ID)}&deleted_at=is.null&order=updated_at.asc,id.asc`);
     if (!rows?.length) { await pushProducts(); return false; }
     applying = true;
     const existingHidden = new Map(products.map((product) => [String(product.id), Boolean(product.hidden)]));
-    products = rows.map((row) => ({ id: localId(row.id), name: row.name, sku: row.sku || '', category: row.category, price: Number(row.price || 0), stock: Number(row.stock || 0), unit: row.unit || 'ชิ้น', icon: row.icon || '📦', hidden: row.is_hidden === undefined ? Boolean(existingHidden.get(String(localId(row.id)))) : Boolean(row.is_hidden) }));
+    const existingProducts = new Map(products.map((product) => [String(product.id), product]));
+    const preserved = new Set(preserveIds.map(String));
+    products = rows.map((row) => {
+      const id = localId(row.id);
+      if (preserved.has(String(id)) && existingProducts.has(String(id))) return existingProducts.get(String(id));
+      return { id, name: row.name, sku: row.sku || '', category: row.category, price: Number(row.price || 0), stock: Number(row.stock || 0), unit: row.unit || 'ชิ้น', icon: row.icon || '📦', hidden: row.is_hidden === undefined ? Boolean(existingHidden.get(String(id))) : Boolean(row.is_hidden) };
+    });
     localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products));
     applying = false;
+    rememberProducts(products);
     return true;
   }
 
@@ -192,16 +233,14 @@
       await ensureImportedCatalog();
       // Upload local edits before pulling remote rows, so a quick refresh
       // cannot replace a newly saved price with the old DB value.
-      const productsWereDirty = dirty('products');
-      if (productsWereDirty) await pushProducts();
+      const productsWereDirty = dirty('products') || dirtyProductIds().length > 0;
+      const pushedProductIds = productsWereDirty ? dirtyProductIds() : [];
+      if (productsWereDirty) await pushProducts({ onlyDirty: true });
       if (dirty('sales')) await pushSales();
       if (dirty('settings')) await pushSettings();
-      // Do not immediately pull the catalog after a local edit. The push above
-      // is authoritative for this browser; pulling in the same turn can still
-      // return the previous row while the REST replica catches up and erase a
-      // freshly edited price from the screen. The next scheduled sync will
-      // pull it after the dirty flag has been cleared.
-      const pulled = await Promise.all([productsWereDirty ? Promise.resolve(false) : pullProducts(), pullSales(), pullSettings()]);
+      // Pull other catalog changes immediately, but preserve rows just pushed
+      // because the REST read replica may lag briefly behind the write.
+      const pulled = await Promise.all([pullProducts(pushedProductIds), pullSales(), pullSettings()]);
       if (pulled.some(Boolean)) { renderSettings(); renderCategories(); renderProducts(); renderManageProducts(); renderReports(); renderCart(); }
       document.body.dataset.cloudStatus = 'connected';
     } catch (error) {
@@ -224,13 +263,13 @@
   }
 
   function queue(key) {
-    if (key === PRODUCTS_KEY) markDirty('products');
+    if (key === PRODUCTS_KEY) { markDirty('products'); markChangedProducts(); }
     if (key === SALES_KEY) markDirty('sales');
     if (key === SETTINGS_KEY) markDirty('settings');
     if (applying || !cloud.hasSession()) return;
     clearTimeout(timers.get(key));
     timers.set(key, setTimeout(async () => {
-      try { if (key === PRODUCTS_KEY) await pushProducts(); if (key === SALES_KEY) await pushSales(); if (key === SETTINGS_KEY) { await pushShop(); await pushSettings(); } } catch (error) { console.warn('Cloud save failed:', error.message); }
+      try { if (key === PRODUCTS_KEY) await pushProducts({ onlyDirty: true }); if (key === SALES_KEY) await pushSales(); if (key === SETTINGS_KEY) { await pushShop(); await pushSettings(); } } catch (error) { console.warn('Cloud save failed:', error.message); }
     }, 450));
   }
 
@@ -247,4 +286,5 @@
     },
     syncNow
   };
+  if (!localStorage.getItem(PRODUCTS_SNAPSHOT_KEY)) rememberProducts(localJson(PRODUCTS_KEY, []));
 })();
