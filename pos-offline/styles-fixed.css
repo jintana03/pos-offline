@@ -201,8 +201,10 @@ td:first-child { font-weight: 700; color: var(--ink); }
 .invoice-customer { display: grid; grid-template-columns: 1.5fr 1fr 1.2fr; border-bottom: 1px solid #7890c4; padding: 12px 4px; font-size: 10px; gap: 14px; }
 .invoice-customer span { display: block; font-weight: 600; }
 .invoice-customer b { display: block; margin-top: 4px; color: #243c7a; min-height: 14px; }
-.invoice-items { width: 100%; max-width: 180mm; min-width: 0; border-collapse: collapse; table-layout: fixed; margin: 14px auto 0; color: #304b8f; }
-.invoice-items th, .invoice-items td { border: 1px solid #8da0cb; padding: 3px 4px; font-size: 9px; background: #fff; text-align: center; vertical-align: middle; white-space: normal; overflow-wrap: anywhere; }
+.invoice-items { width: 100%; max-width: 180mm; min-width: 0; border-collapse: separate; border-spacing: 0; table-layout: fixed; margin: 14px auto 0; color: #304b8f; }
+.invoice-items th, .invoice-items td { border: 0; border-right: 0.25mm solid #8da0cb; border-bottom: 0.25mm solid #8da0cb; padding: 3px 4px; font-size: 9px; background: #fff; text-align: center; vertical-align: middle; white-space: normal; overflow-wrap: anywhere; }
+.invoice-items tr > :first-child { border-left: 0.25mm solid #8da0cb; }
+.invoice-items thead tr:first-child > * { border-top: 0.25mm solid #8da0cb; }
 .invoice-items th { background: #e9edf8; font-weight: 700; line-height: 1.4; }
 .invoice-items th small { font-size: 9px; font-weight: 500; }
 .invoice-items td { height: 22px; color: #304b8f; }
